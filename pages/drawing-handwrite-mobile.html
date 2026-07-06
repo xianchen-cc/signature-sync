@@ -31,27 +31,6 @@
       z-index: 99999;
       background: #FFFFFF;
     }
-    
-    .hw-landscape-active {
-      position: fixed !important;
-      top: 0 !important;
-      left: 0 !important;
-      width: 100vh !important;
-      height: 100vw !important;
-      max-width: none !important;
-      max-height: none !important;
-    }
-    
-    .hw-landscape-rotate .hw-mobile {
-      width: 100% !important;
-      height: 100% !important;
-      min-width: 0;
-      min-height: 0;
-    }
-    
-    @media screen and (orientation: portrait) {
-      .hw-landscape-rotate { display: block !important; }
-    }
 
     body.hw-landscape-mode,
     html.hw-landscape-mode {
@@ -68,60 +47,85 @@
       background: #FFFFFF;
     }
 
-    /* ===== 左侧工具栏 ===== */
+    /* ===== 左侧工具栏（72px宽，设计稿规范） ===== */
     .hw-mobile__sidebar {
       flex-shrink: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
-      padding: 20px 8px;
-      gap: 20px;
+      justify-content: space-between;
+      padding: 16px 0;
+      gap: 16px;
       background: #FFFFFF;
       border-right: 1px solid #EAEBF0;
-      width: 60px;
+      width: 72px;
+      height: 100%;
       z-index: 10;
     }
 
-    /* 返回按钮 */
+    /* ===== 返回按钮区域（顶部） ===== */
+    .hw-mobile__back-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 4px;
+      width: 24px;
+      height: 44px;
+      flex-shrink: 0;
+    }
     .hw-mobile__back {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 2px;
+      gap: 4px;
       cursor: pointer;
       border: none; background: none;
-      padding: 4px;
+      padding: 0;
       font-family: inherit;
-      flex-shrink: 0;
+      width: 100%; height: 100%;
     }
     .hw-mobile__back-icon {
       display: flex; align-items: center; justify-content: center;
+      width: 12px; height: 24px;
     }
-    .hw-mobile__back-icon svg { display: block; }
+    .hw-mobile__back-icon svg { display: block; width: 100%; height: 100%; }
     .hw-mobile__back-label {
-      font-size: 12px; line-height: 14px;
+      font-size: 14px; line-height: 20px;
       color: #262626;
       text-align: center;
-      writing-mode: vertical-lr;
+      white-space: nowrap;
     }
 
-    /* 工具按钮组 - 垂直排列 */
-    .hw-mobile__tools {
+    /* ===== 中间工具按钮区域 ===== */
+    .hw-mobile__tools-section {
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 16px;
       flex: 1;
+      justify-content: center;
     }
+
+    /* 工具按钮行（横向排列两个按钮，如设计稿Frame 13539） */
+    .hw-mobile__tool-row {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      gap: 24px;
+      padding: 16px;
+    }
+
+    /* 单个工具按钮 - 设计稿规范：32x32, 圆角5px, 白色背景 */
     .hw-mobile__tool-btn {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 40px; height: 40px;
-      border-radius: 50%;
-      background: transparent;
+      width: 32px; height: 32px;
+      border-radius: 5px;
+      background: #FFFFFF;
       border: none;
       cursor: pointer;
       padding: 0;
@@ -131,39 +135,59 @@
       background: #F5F5F5;
     }
 
-    /* 画笔/工具图标 */
+    /* 工具图标 */
     .hw-mobile__tool-icon {
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
+      width: 21px; height: 21px;
     }
-    .hw-mobile__tool-icon svg { display: block; }
+    .hw-mobile__tool-icon svg { display: block; width: 100%; height: 100%; }
 
-    /* 底部操作按钮 - 垂直排列 */
+    /* 颜色圆点特殊处理 - 黑色实心圆 */
+    .hw-mobile__color-dot {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: #000000;
+      display: block;
+    }
+
+    /* 撤销按钮 - 单独一行 */
+    .hw-mobile__tool-btn--single {
+      width: 32px; height: 32px;
+      border-radius: 5px;
+      background: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ===== 底部操作按钮区域 ===== */
     .hw-mobile__actions {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      gap: 12px;
+      align-items: flex-start;
+      gap: 16px;
       flex-shrink: 0;
-      margin-top: auto;
+      width: 40px;
     }
+
+    /* 操作按钮 - 设计稿规范：120x40 */
     .hw-mobile__btn {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 44px;
-      padding: 10px 6px;
-      border-radius: 4px;
+      width: 120px; height: 40px;
+      border-radius: 2px;
       font-family: "PingFang SC", sans-serif;
       font-weight: 400;
-      font-size: 13px;
-      line-height: 18px;
+      font-size: 16px;
+      line-height: 22px;
       border: none;
       cursor: pointer;
       flex-shrink: 0;
       writing-mode: vertical-lr;
+      text-orientation: mixed;
     }
     .hw-mobile__btn--redo {
       background: #FFFFFF;
@@ -174,10 +198,6 @@
     .hw-mobile__btn--done {
       background: #5F11F1;
       color: #FFFFFF;
-      width: 44px;
-      height: auto;
-      min-height: 52px;
-      border-radius: 6px;
     }
     .hw-mobile__btn--done:active { background: #4B0EC1; }
     .hw-mobile__btn--done.is-disabled {
@@ -337,7 +357,7 @@
   <script>
     // Firebase 配置（与PC端保持一致）
     var firebaseConfig = {
-      apiKey: "AIzaSyBh6XqV6vXqXqXqXqXqXqXqXqXqXqXqXqXq",
+      apiKey: "AIzaSyBh6XqV6vXqXqXqXqXqXqXqXqXqXqXqXq",
       authDomain: "signature-sync-test.firebaseapp.com",
       databaseURL: "https://signature-sync-test-default-rtdb.firebaseio.com",
       projectId: "signature-sync-test",
@@ -409,51 +429,52 @@
     }
   </script>
 
-  <!-- 左侧工具栏 + 右侧画布 布局 -->
+  <!-- 左侧工具栏(72px) + 右侧画布 布局 -->
   <div class="hw-mobile" id="hwMobile">
     <!-- 左侧工具栏 -->
     <div class="hw-mobile__sidebar">
-      <!-- 返回按钮 -->
-      <button class="hw-mobile__back" id="hwBtnBack">
-        <span class="hw-mobile__back-icon">
-          <svg width="12" height="24" viewBox="0 0 12 24" fill="none">
-            <path fill-rule="evenodd" clip-rule="evenodd" d="M9.99994 19.4375L8.95447 20.5L1.28086 12.7014C0.897919 12.3122 0.89792 11.6878 1.28086 11.2986L8.95447 3.5L9.99994 4.5625L2.68167 12L9.99994 19.4375Z" fill="#262626"/>
-          </svg>
-        </span>
-        <span class="hw-mobile__back-label">返回</span>
-      </button>
+      <!-- 顶部：返回按钮 -->
+      <div class="hw-mobile__back-section">
+        <button class="hw-mobile__back" id="hwBtnBack">
+          <span class="hw-mobile__back-icon">
+            <svg viewBox="0 0 12 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9.99994 19.4375L8.95447 20.5L1.28086 12.7014C0.897919 12.3122 0.89792 11.6878 1.28086 11.2986L8.95447 3.5L9.99994 4.5625L2.68167 12L9.99994 19.4375Z" fill="#262626"/>
+            </svg>
+          </span>
+          <span class="hw-mobile__back-label">返回</span>
+        </button>
+      </div>
 
-      <!-- 工具按钮组 -->
-      <div class="hw-mobile__tools">
-        <!-- 颜色按钮（黑色圆点） -->
-        <button class="hw-mobile__tool-btn" id="hwBtnColor" data-action="color">
+      <!-- 中间：工具按钮区 -->
+      <div class="hw-mobile__tools-section">
+        <!-- 颜色 + 画笔 行 -->
+        <div class="hw-mobile__tool-row">
+          <!-- 颜色按钮（黑色圆点） -->
+          <button class="hw-mobile__tool-btn" id="hwBtnColor" data-action="color">
+            <span class="hw-mobile__color-dot"></span>
+          </button>
+          <!-- 画笔按钮（曲线笔触） -->
+          <button class="hw-mobile__tool-btn" id="hwBtnPen" data-action="pen">
+            <span class="hw-mobile__tool-icon">
+              <svg viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6.735 17.583C10.476 12.03 16.622 8.127 18.57 9.94C21.36 12.535 9.575 20.866 12.072 22.5C13.907 23.7 21.877 14.573 23.458 16.665C24.68 18.285 19.197 21.766 21.057 23.136C22.324 24.07 24.155 22.201 25.265 20.974" stroke="#262626" stroke-width="1.6" stroke-linecap="round"/>
+              </svg>
+            </span>
+          </button>
+        </div>
+
+        <!-- 撤销按钮（单独一行） -->
+        <button class="hw-mobile__tool-btn--single" id="hwBtnUndo" data-action="undo">
           <span class="hw-mobile__tool-icon">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-              <circle cx="16" cy="16" r="14" fill="black"/>
-            </svg>
-          </span>
-        </button>
-        <!-- 画笔按钮（曲线笔触） -->
-        <button class="hw-mobile__tool-btn" id="hwBtnPen" data-action="pen">
-          <span class="hw-mobile__tool-icon">
-            <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
-              <path d="M6.735 17.583C10.476 12.03 16.622 8.127 18.57 9.94C21.36 12.535 9.575 20.866 12.072 22.5C13.907 23.7 21.877 14.573 23.458 16.665C24.68 18.285 19.197 21.766 21.057 23.136C22.324 24.07 24.155 22.201 25.265 20.974" stroke="#262626" stroke-width="1.6" stroke-linecap="round"/>
-            </svg>
-          </span>
-        </button>
-        <!-- 撤销按钮（回退箭头） -->
-        <button class="hw-mobile__tool-btn" id="hwBtnUndo" data-action="undo">
-          <span class="hw-mobile__tool-icon">
-            <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
-              <path d="M17.583 11.91C20.96 11.91 23.699 14.605 23.699 17.93C23.699 21.15 21.129 23.78 17.898 23.941L17.583 23.949H10.194C9.772 23.949 9.43 23.612 9.43 23.196C9.43 22.781 9.772 22.444 10.194 22.444H17.583C20.116 22.444 22.17 20.423 22.17 17.93C22.17 15.436 20.116 13.415 17.583 13.415H10.194C9.772 13.415 9.43 13.078 9.43 12.663C9.43 12.247 9.772 11.91 10.194 11.91H17.583Z" fill="#262626"/>
-              <path d="M7.923 13.134C7.624 12.84 7.624 12.364 7.923 12.07C8.221 11.776 8.705 11.776 9.004 12.07L12.967 15.972C13.266 16.265 13.266 16.742 12.967 17.036C12.669 17.329 12.185 17.329 11.886 17.036L7.923 13.134Z" fill="#262626"/>
-              <path d="M9.004 13.135C8.705 13.429 8.221 13.428 7.923 13.134C7.624 12.84 7.624 12.364 7.923 12.07L11.886 8.169C12.185 7.875 12.669 7.875 12.967 8.169C13.266 8.463 13.266 8.939 12.967 9.233L9.004 13.135Z" fill="#262626"/>
+            <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8.7915 5.955C10.48 5.955 11.8495 7.3025 11.8495 8.965C11.8495 10.575 10.5645 11.89 8.949 11.97L8.7915 11.974H5.097C4.886 11.974 4.715 11.801 4.715 11.598C4.715 11.395 4.886 11.222 5.097 11.222H8.7915C10.058 11.222 11.085 10.2115 11.085 8.965C11.085 7.7185 10.058 6.708 8.7915 6.708H5.097C4.886 6.708 4.715 6.535 4.715 6.332C4.715 6.129 4.886 5.956 5.097 5.956L8.7915 5.955ZM3.9615 6.567C3.812 6.42 3.812 6.182 3.9615 6.035C4.111 5.888 4.3525 5.888 4.5025 6.035L6.4835 7.986C6.633 8.133 6.633 8.371 6.4835 8.518C6.334 8.665 6.0925 8.665 5.943 8.518L3.9615 6.567Z" fill="#262626"/>
+              <path d="M4.5025 6.5675C4.3525 6.7145 4.111 6.714 3.9615 6.567C3.812 6.42 3.812 6.182 3.9615 6.035L5.943 4.0845C6.0925 3.9375 6.334 3.9375 6.4835 4.0845C6.633 4.2315 6.633 4.4695 6.4835 4.6165L4.5025 6.5675Z" fill="#262626"/>
             </svg>
           </span>
         </button>
       </div>
 
-      <!-- 底部操作按钮 -->
+      <!-- 底部：操作按钮 -->
       <div class="hw-mobile__actions">
         <button class="hw-mobile__btn hw-mobile__btn--redo" id="hwBtnRedo">重写</button>
         <button class="hw-mobile__btn hw-mobile__btn--done is-disabled" id="hwBtnDone">完成</button>
@@ -483,22 +504,22 @@
             <span class="hw-mobile__panel-label">颜色</span>
             <div class="hw-mobile__panel-swatches" id="hwPanelColors">
               <button class="hw-mobile__panel-swatch hw-mobile__panel-swatch--active" data-color="#000000">
-                <span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#000000;flex-shrink:0;"></span>
+                <span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#000000;"></span>
               </button>
               <button class="hw-mobile__panel-swatch" data-color="#2C60F2">
-                <span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#2C60F2;flex-shrink:0;"></span>
+                <span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#2C60F2;"></span>
               </button>
               <button class="hw-mobile__panel-swatch" data-color="#EA2C2C">
-                <span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#EA2C2C;flex-shrink:0;"></span>
+                <span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#EA2C2C;"></span>
               </button>
               <button class="hw-mobile__panel-swatch" data-color="#29C645">
-                <span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#29C645;flex-shrink:0;"></span>
+                <span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#29C645;"></span>
               </button>
               <button class="hw-mobile__panel-swatch" data-color="#E9B20B">
-                <span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#E9B20B;flex-shrink:0;"></span>
+                <span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#E9B20B;"></span>
               </button>
               <button class="hw-mobile__panel-swatch" data-color="#E90E9A">
-                <span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#E90E9A;flex-shrink:0;"></span>
+                <span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#E90E9A;"></span>
               </button>
             </div>
           </div>
@@ -508,22 +529,22 @@
             <div class="hw-mobile__panel-swatches" id="hwPanelSizes">
               <button class="hw-mobile__panel-swatch" data-size="2">
                 <span class="hw-mobile__tool-icon">
-                  <svg width="24" height="20" viewBox="-2 -2 24 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M0.400146 8.49231C4.14127 2.93909 10.287 -0.963736 12.2351 0.848434C15.0257 3.4443 3.24008 11.7747 5.73705 13.4086C7.57155 14.6089 15.5424 5.48219 17.1226 7.57427C18.3458 9.19376 12.8625 12.6756 14.7216 14.0455C15.9887 14.9791 17.8197 13.1103 18.9304 11.8827" stroke="#262626" stroke-width="0.8" stroke-linecap="round"/>
+                  <svg width="24" height="20" viewBox="-2 -2 24 20" fill="none">
+                    <path d="M0.4 8.49C4.14 2.94 10.29 -0.96 12.23 0.85C15.02 3.44 3.24 11.77 5.74 13.41C7.57 14.61 15.54 5.48 17.12 7.57C18.34 9.19 12.86 12.68 14.72 14.05C15.99 14.98 17.82 13.11 18.93 11.88" stroke="#262626" stroke-width="0.8" stroke-linecap="round"/>
                   </svg>
                 </span>
               </button>
               <button class="hw-mobile__panel-swatch hw-mobile__panel-swatch--active" data-size="4">
                 <span class="hw-mobile__tool-icon">
-                  <svg width="24" height="20" viewBox="-2 -2 24 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M0.400146 8.49231C4.14127 2.93909 10.287 -0.963736 12.2351 0.848434C15.0257 3.4443 3.24008 11.7747 5.73705 13.4086C7.57155 14.6089 15.5424 5.48219 17.1226 7.57427C18.3458 9.19376 12.8625 12.6756 14.7216 14.0455C15.9887 14.9791 17.8197 13.1103 18.9304 11.8827" stroke="#262626" stroke-width="1.65" stroke-linecap="round"/>
+                  <svg width="24" height="20" viewBox="-2 -2 24 20" fill="none">
+                    <path d="M0.4 8.49C4.14 2.94 10.29 -0.96 12.23 0.85C15.02 3.44 3.24 11.77 5.74 13.41C7.57 14.61 15.54 5.48 17.12 7.57C18.34 9.19 12.86 12.68 14.72 14.05C15.99 14.98 17.82 13.11 18.93 11.88" stroke="#262626" stroke-width="1.65" stroke-linecap="round"/>
                   </svg>
                 </span>
               </button>
               <button class="hw-mobile__panel-swatch" data-size="6">
                 <span class="hw-mobile__tool-icon">
-                  <svg width="24" height="20" viewBox="-2 -2 24 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M0.400146 8.49231C4.14127 2.93909 10.287 -0.963736 12.2351 0.848434C15.0257 3.4443 3.24008 11.7747 5.73705 13.4086C7.57155 14.6089 15.5424 5.48219 17.1226 7.57427C18.3458 9.19376 12.8625 12.6756 14.7216 14.0455C15.9887 14.9791 17.8197 13.1103 18.9304 11.8827" stroke="#262626" stroke-width="2.8" stroke-linecap="round"/>
+                  <svg width="24" height="20" viewBox="-2 -2 24 20" fill="none">
+                    <path d="M0.4 8.49C4.14 2.94 10.29 -0.96 12.23 0.85C15.02 3.44 3.24 11.77 5.74 13.41C7.57 14.61 15.54 5.48 17.12 7.57C18.34 9.19 12.86 12.68 14.72 14.05C15.99 14.98 17.82 13.11 18.93 11.88" stroke="#262626" stroke-width="2.8" stroke-linecap="round"/>
                   </svg>
                 </span>
               </button>
@@ -713,7 +734,6 @@
       hasDrawn = true;
       updateDoneButton();
       saveState();
-      // 隐藏引导文案
       if (guideEl) guideEl.classList.add('is-hidden');
     }
 
@@ -759,6 +779,12 @@
       });
     }
 
+    // ===== 更新颜色圆点显示 =====
+    function updateColorDot() {
+      var dot = document.querySelector('.hw-mobile__color-dot');
+      if (dot) dot.style.background = currentColor;
+    }
+
     // ===== 工具栏事件 =====
     btnColor.addEventListener('click', function () {
       syncPanelSelections();
@@ -799,6 +825,7 @@
       var activeSize = panelSizes.querySelector('.hw-mobile__panel-swatch--active');
       if (activeSize) currentSize = parseInt(activeSize.getAttribute('data-size'));
       panelOverlay.classList.remove('is-open');
+      updateColorDot();
     });
 
     panelClose.addEventListener('click', function () {

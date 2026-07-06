@@ -59,12 +59,12 @@
       display: flex;
       flex-direction: row;
       align-items: center;
-      justify-content: space-between;
       padding: 16px 20px;
       padding-bottom: calc(16px + env(safe-area-inset-bottom, 0));
       background: #FFFFFF;
       box-shadow: 0px -2px 20px 0 rgba(0, 0, 0, 0.1);  /* Figma #95:876 effects */
       z-index: 10;
+      gap: 16px;  /* 工具组与操作按钮间距 16px */
     }
 
     /* ===== 返回按钮区域 (Figma #95:878: 44px宽, gap 4px) ===== */
@@ -305,19 +305,24 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
   <script>
-    var firebaseConfig = {
-      apiKey: "AIzaSyBh6XqV6vXqXqXqXqXqXqXqXqXqXqXqXq",
-      authDomain: "signature-sync-test.firebaseapp.com",
-      databaseURL: "https://signature-sync-test-default-rtdb.firebaseio.com",
-      projectId: "signature-sync-test",
-      storageBucket: "signature-sync-test.appspot.com",
-      messagingSenderId: "000000000000"
-    };
-    firebase.initializeApp(firebaseConfig);
-    var db = firebase.database();
+    // Firebase 容错初始化
+    var db = null, _fbReady = false;
+    try {
+      var firebaseConfig = {
+        apiKey: "AIzaSyBh6XqV6vXqXqXqXqXqXqXqXqXqXqXqXq",
+        authDomain: "signature-sync-test.firebaseapp.com",
+        databaseURL: "https://signature-sync-test-default-rtdb.firebaseio.com",
+        projectId: "signature-sync-test",
+        storageBucket: "signature-sync-test.appspot.com",
+        messagingSenderId: "000000000000"
+      };
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.database(); _fbReady = true;
+    } catch(e) { console.warn('[Firebase] 初始化失败(离线模式):', e.message); }
     
     function getSessionId() { return new URLSearchParams(window.location.search).get('sid') || ''; }
     function notifyConnected() {
+      if (!_fbReady) return;
       var sid = getSessionId();
       if (!sid) return;
       db.ref('signatures/' + sid).update({ status: 'connected', connectedAt: firebase.database.ServerValue.TIMESTAMP }).catch(function(err) {});
@@ -333,6 +338,7 @@
           var w = Math.round(img.width * scale), h = Math.round(img.height * scale);
           var c = document.createElement('canvas'); c.width = w; c.height = h;
           var ctx = c.getContext('2d'); ctx.fillStyle = '#FFF'; ctx.fillRect(0, 0, w, h); ctx.drawImage(img, 0, 0, w, h);
+          if (!_fbReady) { resolve(c.toDataURL()); return; }
           db.ref('signatures/' + sid).update({ status: 'completed', imageData: c.toDataURL(), timestamp: firebase.database.ServerValue.TIMESTAMP, deviceType: 'mobile' })
             .then(function() { resolve(c.toDataURL()); }).catch(reject);
         };

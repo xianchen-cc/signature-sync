@@ -1,0 +1,1567 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>手绘 - 移动端</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      user-select: none; -webkit-user-select: none;
+      background: #FFFFFF;
+    }
+
+    /* ===== 横屏模式（CSS旋转模拟） ===== */
+    .hw-landscape-rotate {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vh;
+      height: 100vw;
+      transform-origin: top left;
+      transform: rotate(90deg) translateY(-100%);
+      overflow: hidden;
+      z-index: 9999;
+      background: #FFFFFF;
+    }
+    .hw-landscape-rotate .hw-mobile {
+      width: 100%;
+      height: 100%;
+    }
+    /* 横屏模式下禁用系统旋转提示 */
+    @media screen and (orientation: portrait) {
+      .hw-landscape-rotate { display: block; }
+    }
+
+    /* ===== 全屏容器 ===== */
+    .hw-mobile {
+      display: flex;
+      flex-direction: column;
+      width: 100%; height: 100%;
+      background: #FFFFFF;
+    }
+
+    /* ===== 绘制画布区域 ===== */
+    .hw-mobile__canvas-area {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      min-height: 0;
+      background: #FFFFFF;
+    }
+    .hw-mobile__canvas-area canvas {
+      display: block;
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      cursor: crosshair;
+      touch-action: none;
+    }
+
+    /* ===== 引导文案 ===== */
+    .hw-mobile__guide {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      font-family: "PingFang SC", sans-serif;
+      font-weight: 400;
+      font-size: 52px;
+      line-height: 1.2;
+      color: rgba(38, 38, 38, 0.2);
+      text-align: center;
+      white-space: nowrap;
+      z-index: 1;
+    }
+    .hw-mobile__guide.is-hidden { display: none; }
+
+    /* ===== 底部工具栏 ===== */
+    .hw-mobile__toolbar {
+      flex-shrink: 0;
+      position: relative;
+      background: #FFFFFF;
+      box-shadow: 0 -2px 20px 0 rgba(0, 0, 0, 0.1);
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 10;
+    }
+
+    /* 返回按钮 */
+    .hw-mobile__back {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 4px;
+      width: 44px;
+      cursor: pointer;
+      border: none; background: none;
+      padding: 0;
+      font-family: inherit;
+      flex-shrink: 0;
+    }
+    .hw-mobile__back-icon {
+      width: 12px; height: 24px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .hw-mobile__back-icon svg { display: block; }
+    .hw-mobile__back-label {
+      font-size: 14px; line-height: 24px;
+      color: #262626;
+      text-align: center;
+    }
+
+    /* 工具按钮组 */
+    .hw-mobile__tools {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-left: auto;
+      margin-right: 16px;
+    }
+    .hw-mobile__tool-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px; height: 40px;
+      border-radius: 8px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      flex-shrink: 0;
+    }
+
+    /* 画笔/工具图标 */
+    .hw-mobile__tool-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .hw-mobile__tool-icon svg {
+      display: block;
+      width: 32px;
+      height: 32px;
+    }
+
+    /* 右侧操作按钮组 */
+    .hw-mobile__actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-shrink: 0;
+    }
+    .hw-mobile__btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 120px;
+      height: 40px;
+      border-radius: 2px;
+      font-family: "PingFang SC", sans-serif;
+      font-weight: 400;
+      font-size: 16px;
+      line-height: 22px;
+      border: none;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .hw-mobile__btn--redo {
+      background: #FFFFFF;
+      border: 1px solid #EAEBF0;
+      color: #262626;
+    }
+    .hw-mobile__btn--redo:active { background: #F5F5F5; }
+    .hw-mobile__btn--done {
+      background: #5F11F1;
+      color: #FFFFFF;
+    }
+    .hw-mobile__btn--done:active { background: #4B0EC1; }
+    .hw-mobile__btn--done.is-disabled {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    /* ===== 切换画笔面板（右侧滑出） ===== */
+    .hw-mobile__panel-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(38, 38, 38, 0.6);
+      z-index: 100;
+      display: flex;
+      justify-content: flex-end;
+      opacity: 0; visibility: hidden;
+      transition: opacity 0.25s ease, visibility 0.25s ease;
+    }
+    .hw-mobile__panel-overlay.is-open {
+      opacity: 1; visibility: visible;
+    }
+
+    .hw-mobile__panel {
+      width: 375px; max-width: 85vw;
+      height: 100%;
+      background: #FFFFFF;
+      border-radius: 4px 0 0 4px;
+      box-shadow: 0 8px 20px 0 rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+    }
+    .hw-mobile__panel-overlay.is-open .hw-mobile__panel {
+      transform: translateX(0);
+    }
+
+    .hw-mobile__panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      border-bottom: 1px solid #EAEBF0;
+      flex-shrink: 0;
+    }
+    .hw-mobile__panel-title {
+      font-family: "PingFang SC", sans-serif;
+      font-weight: 600;
+      font-size: 16px;
+      line-height: 24px;
+      color: #221D39;
+    }
+    .hw-mobile__panel-close {
+      width: 16px; height: 16px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      border: none; background: none;
+      padding: 0;
+    }
+
+    .hw-mobile__panel-body {
+      flex: 1;
+      padding: 0 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 21px;
+      min-height: 0;
+    }
+
+    .hw-mobile__panel-section { display: flex; flex-direction: column; gap: 16px; }
+    .hw-mobile__panel-label {
+      font-family: "PingFang SC", sans-serif;
+      font-weight: 400;
+      font-size: 16px; line-height: 22px;
+      color: #262626;
+    }
+    .hw-mobile__panel-swatches {
+      display: flex;
+      align-items: center;
+      gap: 21px;
+    }
+    .hw-mobile__panel-swatch {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 30.67px; height: 32px;
+      border-radius: 5px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+    }
+    .hw-mobile__panel-swatch--active {
+      background: #EAEBF0;
+    }
+
+    .hw-mobile__panel-footer {
+      padding: 16px;
+      flex-shrink: 0;
+    }
+    .hw-mobile__panel-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%; height: 40px;
+      padding: 8px 16px;
+      border-radius: 2px;
+      background: #5F11F1;
+      color: #FFFFFF;
+      font-family: "PingFang SC", sans-serif;
+      font-weight: 400;
+      font-size: 16px; line-height: 22px;
+      border: none;
+      cursor: pointer;
+    }
+    .hw-mobile__panel-btn:active { background: #4B0EC1; }
+
+    /* ===== 竖版签署模式 ===== */
+    .hw-mobile.is-portrait .hw-mobile__canvas-area,
+    .hw-mobile.is-portrait .hw-mobile__toolbar {
+      display: none;
+    }
+
+    .hw-mobile__portrait {
+      display: none;
+      flex-direction: column;
+      width: 100%; height: 100%;
+      background: #F1F1F1;
+    }
+    .hw-mobile.is-portrait .hw-mobile__portrait {
+      display: flex;
+    }
+
+    /* 竖版顶部栏 - 已移除 */
+
+    /* 竖版绘制画布区域 */
+    .hw-portrait__canvas-area {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      min-height: 0;
+      background: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 23.8px;
+      gap: 7.93px;
+    }
+    .hw-portrait__canvas-area canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      touch-action: none;
+    }
+    .hw-portrait__guide {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      font-family: "PingFang SC", sans-serif;
+      font-weight: 400;
+      font-size: 52px;
+      line-height: 73px;
+      color: rgba(38, 38, 38, 0.2);
+      text-align: center;
+      white-space: nowrap;
+      z-index: 1;
+    }
+    .hw-portrait__guide.is-hidden { display: none; }
+
+    /* 竖版底部工具栏 */
+    .hw-portrait__toolbar {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      background: #FFFFFF;
+      width: 100%;
+      position: relative;
+    }
+    /* 竖版工具栏顶部渐变遮罩 - 从白色向上渐变为透明 */
+    .hw-portrait__toolbar::before {
+      content: '';
+      position: absolute;
+      top: -20px;
+      left: 0;
+      right: 0;
+      height: 20px;
+      background: linear-gradient(to top, #FFFFFF 0%, rgba(255,255,255,0) 100%);
+      pointer-events: none;
+      z-index: 2;
+    }
+    .hw-portrait__toolbar-top {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px;
+      gap: 24px;
+      width: 375px;
+      height: 71px;
+      background: #FFFFFF;
+      border-top: 1px solid #EAEBF0;
+      flex: none;
+      align-self: stretch;
+      flex-grow: 0;
+    }
+    .hw-portrait__toolbar-bottom {
+      width: 375px;
+      height: 72px;
+      background: #FFFFFF;
+      border-top: 1px solid #F5F5F5;
+      flex: none;
+      order: 1;
+      align-self: stretch;
+      flex-grow: 0;
+      position: relative;
+    }
+    .hw-portrait__back {
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-start;
+      align-items: center;
+      padding: 0;
+      gap: 4px;
+      width: auto;
+      height: 32px;
+      border: none; background: none;
+      font-family: "PingFang SC", sans-serif;
+      font-style: normal;
+      font-weight: 400;
+      font-size: 14px;
+      line-height: 20px;
+      color: #262626;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .hw-portrait__back-icon {
+      width: 12px; height: 20px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .hw-portrait__back-icon svg { display: block; width: 12px; height: 20px; }
+    .hw-portrait__back-label {
+      height: 20px;
+      display: flex;
+      align-items: center;
+      text-align: left;
+      white-space: nowrap;
+    }
+    .hw-portrait__tools {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      padding: 0;
+      gap: 21.33px;
+      height: 32px;
+      flex-shrink: 0;
+    }
+    .hw-portrait__tool-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px; height: 32px;
+      border-radius: 5px;
+      background: #FFFFFF;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+    }
+    .hw-portrait__tool-icon {
+      width: 21px; height: 21px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .hw-portrait__tool-icon svg {
+      display: block;
+      width: 100%; height: 100%;
+    }
+    .hw-portrait__actions {
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-end;
+      align-items: center;
+      padding: 16px;
+      gap: 16px;
+      position: absolute;
+      width: 375px;
+      height: 72px;
+      left: 0;
+      bottom: 0;
+    }
+    .hw-portrait__btn {
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      width: 163.5px;
+      height: 40px;
+      border-radius: 2px;
+      font-family: "PingFang SC", sans-serif;
+      font-style: normal;
+      font-weight: 400;
+      font-size: 16px;
+      line-height: 22px;
+      border: none;
+      cursor: pointer;
+      flex: 1;
+    }
+    .hw-portrait__btn--redo {
+      background: #FFFFFF;
+      border: 1px solid #EAEBF0;
+      color: #262626;
+    }
+    .hw-portrait__btn--done {
+      background: #5F11F1;
+      opacity: 0.4;
+      color: #FFFFFF;
+      pointer-events: none;
+    }
+    .hw-portrait__btn--done.is-disabled {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    /* 竖版切换画笔面板（底部弹窗） */
+    .hw-portrait__panel-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(38, 38, 38, 0.6);
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      opacity: 0; visibility: hidden;
+      transition: opacity 0.25s ease, visibility 0.25s ease;
+    }
+    .hw-portrait__panel-overlay.is-open {
+      opacity: 1; visibility: visible;
+    }
+    .hw-portrait__panel {
+      background: #FFFFFF;
+      border-radius: 4px 4px 0 0;
+      box-shadow: 0 2px 12px 0 rgba(34, 29, 57, 0.1);
+      display: flex;
+      flex-direction: column;
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+    }
+    .hw-portrait__panel-overlay.is-open .hw-portrait__panel {
+      transform: translateY(0);
+    }
+    .hw-portrait__panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      border-bottom: 1px solid #EAEBF0;
+    }
+    .hw-portrait__panel-title {
+      font-family: "PingFang SC", sans-serif;
+      font-weight: 600;
+      font-size: 16px;
+      line-height: 24px;
+      color: #221D39;
+    }
+    .hw-portrait__panel-close {
+      width: 16px; height: 16px;
+      display: flex; align-items: center; justify-content: center;
+      border: none; background: none;
+      padding: 0; cursor: pointer;
+    }
+    .hw-portrait__panel-body {
+      padding: 0 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 21px;
+      min-height: 200px;
+    }
+    .hw-portrait__panel-section {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .hw-portrait__panel-label {
+      font-family: "PingFang SC", sans-serif;
+      font-size: 16px;
+      line-height: 22px;
+      color: #262626;
+    }
+    .hw-portrait__panel-swatches {
+      display: flex;
+      align-items: center;
+      gap: 21px;
+    }
+    .hw-portrait__panel-swatch {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px; height: 32px;
+      border-radius: 5px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+    }
+    .hw-portrait__panel-swatch--active {
+      background: #EAEBF0;
+    }
+    .hw-portrait__panel-footer {
+      padding: 16px;
+    }
+    .hw-portrait__panel-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 40px;
+      padding: 8px 16px;
+      border-radius: 2px;
+      background: #5F11F1;
+      color: #FFFFFF;
+      font-family: "PingFang SC", sans-serif;
+      font-size: 16px;
+      line-height: 22px;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="hw-mobile" id="hwMobile">
+    <!-- 绘制画布区域 -->
+    <div class="hw-mobile__canvas-area" id="hwCanvasArea">
+      <canvas id="hwCanvas"></canvas>
+      <div class="hw-mobile__guide" id="hwGuide"></div>
+    </div>
+
+    <!-- 底部工具栏 -->
+    <div class="hw-mobile__toolbar">
+      <!-- 返回按钮 -->
+      <button class="hw-mobile__back" id="hwBtnBack">
+        <span class="hw-mobile__back-icon">
+          <svg width="12" height="24" viewBox="0 0 12 24" fill="none">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M9.99994 19.4375L8.95447 20.5L1.28086 12.7014C0.897919 12.3122 0.89792 11.6878 1.28086 11.2986L8.95447 3.5L9.99994 4.5625L2.68167 12L9.99994 19.4375Z" fill="#262626"/>
+          </svg>
+        </span>
+        <span class="hw-mobile__back-label">返回</span>
+      </button>
+
+      <!-- 工具按钮组 -->
+      <div class="hw-mobile__tools">
+        <!-- 颜色按钮（黑色圆点） -->
+        <button class="hw-mobile__tool-btn" id="hwBtnColor" data-action="color">
+          <span class="hw-mobile__tool-icon">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <circle cx="16" cy="16" r="14" fill="black"/>
+            </svg>
+          </span>
+        </button>
+        <!-- 画笔按钮（曲线笔触） -->
+        <button class="hw-mobile__tool-btn" id="hwBtnPen" data-action="pen">
+          <span class="hw-mobile__tool-icon">
+            <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
+              <path d="M6.735 17.583C10.476 12.03 16.622 8.127 18.57 9.94C21.36 12.535 9.575 20.866 12.072 22.5C13.907 23.7 21.877 14.573 23.458 16.665C24.68 18.285 19.197 21.766 21.057 23.136C22.324 24.07 24.155 22.201 25.265 20.974" stroke="#262626" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </span>
+        </button>
+        <!-- 框选/裁剪按钮 -->
+        <button class="hw-mobile__tool-btn" id="hwBtnRect" data-action="rect">
+          <span class="hw-mobile__tool-icon">
+            <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
+              <path d="M23.333 14.763L25.009 13.162L26.306 14.401L22.417 18.112L18.527 14.401L19.824 13.162L21.5 14.763V12.5C21.5 11.804 21.21 11.136 20.695 10.644C20.179 10.152 19.48 9.875 18.75 9.875H15.083V8.125H18.75C19.352 8.125 19.948 8.238 20.504 8.458C21.06 8.678 21.565 9 21.99 9.406C22.416 9.813 22.754 10.295 22.985 10.826C23.215 11.357 23.333 11.926 23.333 12.5V14.763ZM16.917 13.375C17.16 13.375 17.393 13.467 17.565 13.631C17.737 13.795 17.833 14.018 17.833 14.25V23C17.833 23.232 17.737 23.455 17.565 23.619C17.393 23.783 17.16 23.875 16.917 23.875H7.75C7.507 23.875 7.274 23.783 7.102 23.619C6.93 23.455 6.833 23.232 6.833 23V14.25C6.833 14.135 6.857 14.021 6.903 13.915C6.949 13.809 7.017 13.713 7.102 13.631C7.187 13.55 7.288 13.486 7.399 13.442C7.51 13.398 7.63 13.375 7.75 13.375H16.917ZM16 15.125H8.667V22.125H16V15.125Z" fill="black"/>
+            </svg>
+          </span>
+        </button>
+        <!-- 撤销按钮（回退箭头） -->
+        <button class="hw-mobile__tool-btn" id="hwBtnUndo" data-action="undo">
+          <span class="hw-mobile__tool-icon">
+            <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
+              <path d="M17.583 11.91C20.96 11.91 23.699 14.605 23.699 17.93C23.699 21.15 21.129 23.78 17.898 23.941L17.583 23.949H10.194C9.772 23.949 9.43 23.612 9.43 23.196C9.43 22.781 9.772 22.444 10.194 22.444H17.583C20.116 22.444 22.17 20.423 22.17 17.93C22.17 15.436 20.116 13.415 17.583 13.415H10.194C9.772 13.415 9.43 13.078 9.43 12.663C9.43 12.247 9.772 11.91 10.194 11.91H17.583Z" fill="#262626"/>
+              <path d="M7.923 13.134C7.624 12.84 7.624 12.364 7.923 12.07C8.221 11.776 8.705 11.776 9.004 12.07L12.967 15.972C13.266 16.265 13.266 16.742 12.967 17.036C12.669 17.329 12.185 17.329 11.886 17.036L7.923 13.134Z" fill="#262626"/>
+              <path d="M9.004 13.135C8.705 13.429 8.221 13.428 7.923 13.134C7.624 12.84 7.624 12.364 7.923 12.07L11.886 8.169C12.185 7.875 12.669 7.875 12.967 8.169C13.266 8.463 13.266 8.939 12.967 9.233L9.004 13.135Z" fill="#262626"/>
+            </svg>
+          </span>
+        </button>
+      </div>
+
+      <!-- 操作按钮 -->
+      <div class="hw-mobile__actions">
+        <button class="hw-mobile__btn hw-mobile__btn--redo" id="hwBtnRedo">重写</button>
+        <button class="hw-mobile__btn hw-mobile__btn--done is-disabled" id="hwBtnDone">完成</button>
+      </div>
+    </div>
+
+    <!-- 切换画笔面板 -->
+    <div class="hw-mobile__panel-overlay" id="hwPanelOverlay">
+      <div class="hw-mobile__panel" id="hwPanel">
+        <div class="hw-mobile__panel-header">
+          <span class="hw-mobile__panel-title">切换画笔</span>
+          <button class="hw-mobile__panel-close" id="hwPanelClose">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M12.0092 2.93015C12.3021 2.63729 12.7769 2.63726 13.0698 2.93015C13.3381 3.19852 13.3606 3.6196 13.1372 3.91354L13.0698 3.99069L9.06 7.99948L13.0698 12.0092C13.3626 12.3021 13.3626 12.7769 13.0698 13.0698C12.8014 13.3381 12.3803 13.3606 12.0864 13.1372L12.0092 13.0698L7.99945 9.06003L3.99067 13.0698C3.69778 13.3626 3.223 13.3626 2.93012 13.0698C2.66175 12.8014 2.63932 12.3803 2.86274 12.0864L2.93012 12.0092L6.93891 7.99948L2.93012 3.99069C2.63723 3.6978 2.63723 3.22304 2.93012 2.93015C3.1985 2.66177 3.61956 2.63931 3.91352 2.86276L3.99067 2.93015L7.99945 6.93893L12.0092 2.93015Z" fill="#BDBDBD"/>
+            </svg>
+          </button>
+        </div>
+        <div class="hw-mobile__panel-body">
+          <!-- 颜色区域 -->
+          <div class="hw-mobile__panel-section">
+            <span class="hw-mobile__panel-label">颜色</span>
+            <div class="hw-mobile__panel-swatches" id="hwPanelColors">
+              <button class="hw-mobile__panel-swatch hw-mobile__panel-swatch--active" data-color="#000000">
+                <span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#000000;flex-shrink:0;"></span>
+              </button>
+              <button class="hw-mobile__panel-swatch" data-color="#2C60F2">
+                <span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#2C60F2;flex-shrink:0;"></span>
+              </button>
+              <button class="hw-mobile__panel-swatch" data-color="#EA2C2C">
+                <span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#EA2C2C;flex-shrink:0;"></span>
+              </button>
+              <button class="hw-mobile__panel-swatch" data-color="#29C645">
+                <span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#29C645;flex-shrink:0;"></span>
+              </button>
+              <button class="hw-mobile__panel-swatch" data-color="#E9B20B">
+                <span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#E9B20B;flex-shrink:0;"></span>
+              </button>
+              <button class="hw-mobile__panel-swatch" data-color="#E90E9A">
+                <span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#E90E9A;flex-shrink:0;"></span>
+              </button>
+            </div>
+          </div>
+          <!-- 粗细区域 -->
+          <div class="hw-mobile__panel-section">
+            <span class="hw-mobile__panel-label">粗细</span>
+            <div class="hw-mobile__panel-swatches" id="hwPanelSizes">
+              <button class="hw-mobile__panel-swatch" data-size="2">
+                <span class="hw-mobile__tool-icon">
+                  <svg width="24" height="20" viewBox="-2 -2 24 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M0.400146 8.49231C4.14127 2.93909 10.287 -0.963736 12.2351 0.848434C15.0257 3.4443 3.24008 11.7747 5.73705 13.4086C7.57155 14.6089 15.5424 5.48219 17.1226 7.57427C18.3458 9.19376 12.8625 12.6756 14.7216 14.0455C15.9887 14.9791 17.8197 13.1103 18.9304 11.8827" stroke="#262626" stroke-width="0.8" stroke-linecap="round"/>
+                  </svg>
+                </span>
+              </button>
+              <button class="hw-mobile__panel-swatch hw-mobile__panel-swatch--active" data-size="4">
+                <span class="hw-mobile__tool-icon">
+                  <svg width="24" height="20" viewBox="-2 -2 24 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M0.400146 8.49231C4.14127 2.93909 10.287 -0.963736 12.2351 0.848434C15.0257 3.4443 3.24008 11.7747 5.73705 13.4086C7.57155 14.6089 15.5424 5.48219 17.1226 7.57427C18.3458 9.19376 12.8625 12.6756 14.7216 14.0455C15.9887 14.9791 17.8197 13.1103 18.9304 11.8827" stroke="#262626" stroke-width="1.65" stroke-linecap="round"/>
+                  </svg>
+                </span>
+              </button>
+              <button class="hw-mobile__panel-swatch" data-size="6">
+                <span class="hw-mobile__tool-icon">
+                  <svg width="24" height="20" viewBox="-2 -2 24 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M0.400146 8.49231C4.14127 2.93909 10.287 -0.963736 12.2351 0.848434C15.0257 3.4443 3.24008 11.7747 5.73705 13.4086C7.57155 14.6089 15.5424 5.48219 17.1226 7.57427C18.3458 9.19376 12.8625 12.6756 14.7216 14.0455C15.9887 14.9791 17.8197 13.1103 18.9304 11.8827" stroke="#262626" stroke-width="2.8" stroke-linecap="round"/>
+                  </svg>
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="hw-mobile__panel-footer">
+          <button class="hw-mobile__panel-btn" id="hwPanelSwitch">切换</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 竖版签署模式 -->
+    <div class="hw-mobile__portrait" id="hwPortrait">
+      <!-- 绘制画布区域 -->
+      <div class="hw-portrait__canvas-area">
+        <canvas id="hwPortraitCanvas"></canvas>
+        <div class="hw-portrait__guide"></div>
+      </div>
+
+      <!-- 底部工具栏 -->
+      <div class="hw-portrait__toolbar">
+        <div class="hw-portrait__toolbar-top">
+          <button class="hw-portrait__back" id="hwPortraitBack">
+            <span class="hw-portrait__back-icon">
+              <svg width="12" height="24" viewBox="0 0 12 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M10.0001 19.4375L8.95459 20.5L1.28098 12.7014C0.898041 12.3122 0.898042 11.6878 1.28098 11.2986L8.95459 3.5L10.0001 4.5625L2.68179 12L10.0001 19.4375Z" fill="#262626"/>
+              </svg>
+            </span>
+            <span class="hw-portrait__back-label">返回</span>
+          </button>
+          <div class="hw-portrait__tools">
+            <!-- 颜色按钮 -->
+            <button class="hw-portrait__tool-btn" id="hwPortraitBtnColor" title="颜色">
+              <span class="hw-portrait__tool-icon">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                  <circle cx="9" cy="9" r="7" fill="black"/>
+                </svg>
+              </span>
+            </button>
+            <!-- 画笔按钮 -->
+            <button class="hw-portrait__tool-btn" id="hwPortraitBtnPen" title="画笔">
+              <span class="hw-portrait__tool-icon">
+                <svg width="21" height="16" viewBox="0 0 21 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M0.825857 9.17886C4.68766 3.44651 11.0316 -0.582211 13.0426 1.28842C15.9232 3.96802 3.7574 12.5672 6.33492 14.2537C8.22859 15.4928 16.4566 6.07165 18.0877 8.23122C19.3504 9.90295 13.6902 13.4971 15.6093 14.9112C16.9172 15.875 18.8074 13.9458 19.9538 12.6786" stroke="#262626" stroke-width="1.65161" stroke-linecap="round"/>
+                </svg>
+              </span>
+            </button>
+            <!-- 框选按钮 -->
+            <button class="hw-portrait__tool-btn" id="hwPortraitBtnRect" title="框选">
+              <span class="hw-portrait__tool-icon">
+                <svg width="22" height="21" viewBox="0 0 22 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M18.3333 9.26275L20.0089 7.66237L21.306 8.9005L17.4166 12.6122L13.5272 8.9005L14.8243 7.66237L16.4999 9.26275V7C16.4999 6.30381 16.2102 5.63613 15.6945 5.14384C15.1787 4.65156 14.4793 4.375 13.7499 4.375H10.0833V2.625H13.7499C14.3518 2.625 14.9478 2.73816 15.5039 2.95803C16.06 3.17789 16.5652 3.50015 16.9908 3.90641C17.4164 4.31266 17.754 4.79496 17.9844 5.32576C18.2147 5.85656 18.3333 6.42547 18.3333 7V9.26275ZM11.9166 7.875C12.1597 7.875 12.3929 7.96719 12.5648 8.13128C12.7367 8.29538 12.8333 8.51794 12.8333 8.75V17.5C12.8333 17.7321 12.7367 17.9546 12.5648 18.1187C12.3929 18.2828 12.1597 18.375 11.9166 18.375H2.74992C2.5068 18.375 2.27365 18.2828 2.10174 18.1187C1.92983 17.9546 1.83325 17.7321 1.83325 17.5V8.75C1.83325 8.63509 1.85696 8.52131 1.90303 8.41515C1.9491 8.30899 2.01662 8.21253 2.10174 8.13128C2.18686 8.05003 2.28791 7.98558 2.39913 7.94161C2.51034 7.89763 2.62954 7.875 2.74992 7.875H11.9166ZM10.9999 9.625H3.66659V16.625H10.9999V9.625Z" fill="black"/>
+                </svg>
+              </span>
+            </button>
+            <!-- 撤销按钮 -->
+            <button class="hw-portrait__tool-btn" id="hwPortraitBtnUndo" title="撤销">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="32" height="32" rx="5" fill="white"/>
+                <path d="M17.5835 11.9102C20.9609 11.9102 23.6987 14.6051 23.6987 17.9295C23.6987 21.15 21.1292 23.7798 17.8981 23.9409L17.5835 23.9487H10.1944C9.77219 23.9487 9.42996 23.6119 9.42996 23.1963C9.42996 22.7808 9.77219 22.4439 10.1944 22.4439H17.5835C20.1165 22.4439 22.1699 20.4227 22.1699 17.9295C22.1699 15.4362 20.1165 13.415 17.5835 13.415H10.1944C9.77219 13.415 9.42996 13.0781 9.42996 12.6626C9.42996 12.2471 9.77219 11.9102 10.1944 11.9102H17.5835Z" fill="#262626"/>
+                <path d="M7.92262 13.1341C7.6241 12.8403 7.6241 12.3639 7.92262 12.0701C8.22113 11.7762 8.70512 11.7762 9.00364 12.0701L12.9674 15.9716C13.2659 16.2655 13.2659 16.7419 12.9674 17.0357C12.6689 17.3295 12.1849 17.3295 11.8864 17.0357L7.92262 13.1341Z" fill="#262626"/>
+                <path d="M9.00365 13.1348C8.70513 13.4286 8.22113 13.428 7.92262 13.1341C7.6241 12.8403 7.6241 12.3639 7.92262 12.0701L11.8864 8.16911C12.1849 7.87527 12.6689 7.87527 12.9674 8.16911C13.2659 8.46294 13.2659 8.93934 12.9674 9.23317L9.00365 13.1348Z" fill="#262626"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="hw-portrait__toolbar-bottom">
+          <div class="hw-portrait__actions">
+            <button class="hw-portrait__btn hw-portrait__btn--redo" id="hwPortraitRedo">重写</button>
+            <button class="hw-portrait__btn hw-portrait__btn--done is-disabled" id="hwPortraitDone">完成</button>
+          </div>
+        </div>
+      </div>
+      <!-- 切换画笔面板（底部弹窗） -->
+      <div class="hw-portrait__panel-overlay" id="hwPortraitPanelOverlay">
+        <div class="hw-portrait__panel">
+          <div class="hw-portrait__panel-header">
+            <span class="hw-portrait__panel-title">切换画笔</span>
+            <button class="hw-portrait__panel-close" id="hwPortraitPanelClose">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M12.0092 2.93015C12.3021 2.63729 12.7769 2.63726 13.0698 2.93015C13.3381 3.19852 13.3606 3.6196 13.1372 3.91354L13.0698 3.99069L9.06 7.99948L13.0698 12.0092C13.3626 12.3021 13.3626 12.7769 13.0698 13.0698C12.8014 13.3381 12.3803 13.3606 12.0864 13.1372L12.0092 13.0698L7.99945 9.06003L3.99067 13.0698C3.69778 13.3626 3.223 13.3626 2.93012 13.0698C2.66175 12.8014 2.63932 12.3803 2.86274 12.0864L2.93012 12.0092L6.93891 7.99948L2.93012 3.99069C2.63723 3.6978 2.63723 3.22304 2.93012 2.93015C3.1985 2.66177 3.61956 2.63931 3.91352 2.86276L3.99067 2.93015L7.99945 6.93893L12.0092 2.93015Z" fill="#BDBDBD"/>
+              </svg>
+            </button>
+          </div>
+          <div class="hw-portrait__panel-body">
+            <div class="hw-portrait__panel-section">
+              <span class="hw-portrait__panel-label">颜色</span>
+              <div class="hw-portrait__panel-swatches" id="hwPortraitPanelColors">
+                <button class="hw-portrait__panel-swatch hw-portrait__panel-swatch--active" data-color="#000000">
+                  <span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#000000;flex-shrink:0;"></span>
+                </button>
+                <button class="hw-portrait__panel-swatch" data-color="#2C60F2">
+                  <span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#2C60F2;flex-shrink:0;"></span>
+                </button>
+                <button class="hw-portrait__panel-swatch" data-color="#EA2C2C">
+                  <span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#EA2C2C;flex-shrink:0;"></span>
+                </button>
+                <button class="hw-portrait__panel-swatch" data-color="#29C645">
+                  <span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#29C645;flex-shrink:0;"></span>
+                </button>
+                <button class="hw-portrait__panel-swatch" data-color="#E9B20B">
+                  <span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#E9B20B;flex-shrink:0;"></span>
+                </button>
+                <button class="hw-portrait__panel-swatch" data-color="#E90E9A">
+                  <span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#E90E9A;flex-shrink:0;"></span>
+                </button>
+              </div>
+            </div>
+            <div class="hw-portrait__panel-section">
+              <span class="hw-portrait__panel-label">粗细</span>
+              <div class="hw-portrait__panel-swatches" id="hwPortraitPanelSizes">
+                <button class="hw-portrait__panel-swatch" data-size="2">
+                  <span class="hw-portrait__tool-icon">
+                    <svg width="24" height="20" viewBox="-2 -2 24 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M0.400146 8.49231C4.14127 2.93909 10.287 -0.963736 12.2351 0.848434C15.0257 3.4443 3.24008 11.7747 5.73705 13.4086C7.57155 14.6089 15.5424 5.48219 17.1226 7.57427C18.3458 9.19376 12.8625 12.6756 14.7216 14.0455C15.9887 14.9791 17.8197 13.1103 18.9304 11.8827" stroke="#262626" stroke-width="0.8" stroke-linecap="round"/>
+                    </svg>
+                  </span>
+                </button>
+                <button class="hw-portrait__panel-swatch hw-portrait__panel-swatch--active" data-size="4">
+                  <span class="hw-portrait__tool-icon">
+                    <svg width="24" height="20" viewBox="-2 -2 24 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M0.400146 8.49231C4.14127 2.93909 10.287 -0.963736 12.2351 0.848434C15.0257 3.4443 3.24008 11.7747 5.73705 13.4086C7.57155 14.6089 15.5424 5.48219 17.1226 7.57427C18.3458 9.19376 12.8625 12.6756 14.7216 14.0455C15.9887 14.9791 17.8197 13.1103 18.9304 11.8827" stroke="#262626" stroke-width="1.65" stroke-linecap="round"/>
+                    </svg>
+                  </span>
+                </button>
+                <button class="hw-portrait__panel-swatch" data-size="6">
+                  <span class="hw-portrait__tool-icon">
+                    <svg width="24" height="20" viewBox="-2 -2 24 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M0.400146 8.49231C4.14127 2.93909 10.287 -0.963736 12.2351 0.848434C15.0257 3.4443 3.24008 11.7747 5.73705 13.4086C7.57155 14.6089 15.5424 5.48219 17.1226 7.57427C18.3458 9.19376 12.8625 12.6756 14.7216 14.0455C15.9887 14.9791 17.8197 13.1103 18.9304 11.8827" stroke="#262626" stroke-width="2.8" stroke-linecap="round"/>
+                    </svg>
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="hw-portrait__panel-footer">
+            <button class="hw-portrait__panel-btn" id="hwPortraitPanelBtn">切换</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+
+  <script>
+  (function () {
+    // ===== 横屏旋转模式（CSS模拟） =====
+    var isLandscapeMode = false;
+    var rotateContainer = null;
+
+    // 启用横屏旋转模式
+    function enableLandscapeRotate() {
+      if (isLandscapeMode) return;
+      isLandscapeMode = true;
+      
+      // 创建旋转容器
+      rotateContainer = document.createElement('div');
+      rotateContainer.className = 'hw-landscape-rotate';
+      
+      // 将hw-mobile移入旋转容器
+      var hwMobile = document.getElementById('hwMobile');
+      document.body.appendChild(rotateContainer);
+      rotateContainer.appendChild(hwMobile);
+      
+      // 禁止页面滚动
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+    }
+
+    // 禁用横屏旋转模式
+    function disableLandscapeRotate() {
+      if (!isLandscapeMode) return;
+      isLandscapeMode = false;
+      
+      var hwMobile = document.getElementById('hwMobile');
+      if (rotateContainer && hwMobile) {
+        document.body.appendChild(hwMobile);
+        rotateContainer.remove();
+        rotateContainer = null;
+      }
+    }
+
+    // 解析URL参数
+    function getQueryParam(name) {
+      var params = new URLSearchParams(window.location.search);
+      return params.get(name);
+    }
+
+    // 根据URL参数决定初始模式
+    var urlMode = getQueryParam('mode'); // 'landscape' 或 'portrait'
+
+    // ===== DOM 引用 =====
+    var canvas = document.getElementById('hwCanvas');
+    var ctx = canvas.getContext('2d');
+    var canvasArea = document.getElementById('hwCanvasArea');
+    var guideEl = document.getElementById('hwGuide');
+
+    var btnBack = document.getElementById('hwBtnBack');
+    var btnRedo = document.getElementById('hwBtnRedo');
+    var btnDone = document.getElementById('hwBtnDone');
+    var btnColor = document.getElementById('hwBtnColor');
+
+    var panelOverlay = document.getElementById('hwPanelOverlay');
+    var panelClose = document.getElementById('hwPanelClose');
+    var panelSwitch = document.getElementById('hwPanelSwitch');
+    var panelColors = document.getElementById('hwPanelColors');
+    var panelSizes = document.getElementById('hwPanelSizes');
+
+    // ===== 状态 =====
+    var currentColor = '#000000';
+    var currentSize = 4; // 默认中等粗细
+    var isDrawing = false;
+    var hasDrawn = false;
+    var undoStack = [];
+    var lastX, lastY;
+    var dpr = window.devicePixelRatio || 1;
+
+    // 工具按钮引用
+    var btnPen = document.getElementById('hwBtnPen');
+    var btnRect = document.getElementById('hwBtnRect');
+    var btnUndo = document.getElementById('hwBtnUndo');
+
+    // ===== 初始化画布 =====
+    function resizeCanvas() {
+      dpr = window.devicePixelRatio || 1;
+      var w = canvasArea.clientWidth;
+      var h = canvasArea.clientHeight;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      canvas.style.width = w + 'px';
+      canvas.style.height = h + 'px';
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(dpr, dpr);
+      // 恢复之前的绘制内容
+      if (undoStack.length > 0) {
+        restoreState(undoStack[undoStack.length - 1]);
+      }
+    }
+
+    function saveState() {
+      undoStack.push(canvas.toDataURL());
+    }
+
+    function restoreState(dataUrl) {
+      var img = new Image();
+      img.onload = function () {
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.scale(dpr, dpr);
+      };
+      img.src = dataUrl;
+    }
+
+    function resetCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      undoStack = [];
+      hasDrawn = false;
+      updateDoneButton();
+      saveState();
+    }
+
+    function updateDoneButton() {
+      if (hasDrawn) {
+        btnDone.classList.remove('is-disabled');
+      } else {
+        btnDone.classList.add('is-disabled');
+      }
+    }
+
+    // ===== 绘制事件 =====
+    function getPos(e) {
+      var rect = canvas.getBoundingClientRect();
+      var clientX, clientY;
+      if (e.touches) {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+      } else {
+        clientX = e.clientX;
+        clientY = e.clientY;
+      }
+      return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+      };
+    }
+
+    function startDraw(e) {
+      e.preventDefault();
+      isDrawing = true;
+      var pos = getPos(e);
+      lastX = pos.x;
+      lastY = pos.y;
+      // 画一个点（确保单次点击也能留下痕迹）
+      ctx.beginPath();
+      ctx.arc(lastX, lastY, currentSize / 2, 0, Math.PI * 2);
+      ctx.fillStyle = currentColor;
+      ctx.fill();
+    }
+
+    function moveDraw(e) {
+      if (!isDrawing) return;
+      e.preventDefault();
+      var pos = getPos(e);
+      ctx.beginPath();
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(pos.x, pos.y);
+      ctx.strokeStyle = currentColor;
+      ctx.lineWidth = currentSize;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+      lastX = pos.x;
+      lastY = pos.y;
+    }
+
+    function endDraw() {
+      if (!isDrawing) return;
+      isDrawing = false;
+      hasDrawn = true;
+      updateDoneButton();
+      saveState();
+    }
+
+    canvas.addEventListener('touchstart', startDraw, { passive: false });
+    canvas.addEventListener('touchmove', moveDraw, { passive: false });
+    canvas.addEventListener('touchend', endDraw);
+    canvas.addEventListener('touchcancel', endDraw);
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mousemove', moveDraw);
+    canvas.addEventListener('mouseup', endDraw);
+    canvas.addEventListener('mouseleave', endDraw);
+
+    // ===== 撤销功能 =====
+    function undo() {
+      if (undoStack.length > 1) {
+        undoStack.pop();
+        restoreState(undoStack[undoStack.length - 1]);
+        // 撤销后检查是否回到初始空白状态
+        if (undoStack.length <= 1) {
+          hasDrawn = false;
+          updateDoneButton();
+        }
+      } else if (undoStack.length === 1) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        undoStack = [];
+        hasDrawn = false;
+        updateDoneButton();
+      }
+    }
+
+    // ===== 画笔状态更新 =====
+    function updatePenToolActive(size) {
+      [btnColor, btnPen, btnRect, btnUndo].forEach(function (btn) {
+        btn.classList.remove('hw-mobile__tool-btn--active');
+      });
+      btnPen.classList.add('hw-mobile__tool-btn--active');
+    }
+
+    function syncPanelSelections() {
+      // 同步颜色选中
+      panelColors.querySelectorAll('.hw-mobile__panel-swatch').forEach(function (btn) {
+        btn.classList.remove('hw-mobile__panel-swatch--active');
+        if (btn.getAttribute('data-color') === currentColor) {
+          btn.classList.add('hw-mobile__panel-swatch--active');
+        }
+      });
+      // 同步粗细选中
+      panelSizes.querySelectorAll('.hw-mobile__panel-swatch').forEach(function (btn) {
+        btn.classList.remove('hw-mobile__panel-swatch--active');
+        if (parseInt(btn.getAttribute('data-size')) === currentSize) {
+          btn.classList.add('hw-mobile__panel-swatch--active');
+        }
+      });
+    }
+
+    // ===== 工具栏事件 =====
+    btnColor.addEventListener('click', function () {
+      syncPanelSelections();
+      panelOverlay.classList.add('is-open');
+    });
+
+    btnPen.addEventListener('click', function () {
+      syncPanelSelections();
+      panelOverlay.classList.add('is-open');
+    });
+
+    btnRect.addEventListener('click', function () {
+      document.getElementById('hwMobile').classList.add('is-portrait');
+      // 延迟初始化竖版canvas（等待display生效后获取正确尺寸）
+      setTimeout(function () {
+        if (portraitCanvas) {
+          resizePortraitCanvas();
+          if (portraitUndoStack.length === 0) {
+            savePortraitState();
+          }
+        }
+      }, 50);
+    });
+
+    btnUndo.addEventListener('click', function () {
+      undo();
+    });
+
+    // ===== 面板事件 =====
+    panelColors.addEventListener('click', function (e) {
+      var btn = e.target.closest('.hw-mobile__panel-swatch');
+      if (!btn) return;
+      panelColors.querySelectorAll('.hw-mobile__panel-swatch').forEach(function (b) {
+        b.classList.remove('hw-mobile__panel-swatch--active');
+      });
+      btn.classList.add('hw-mobile__panel-swatch--active');
+    });
+
+    panelSizes.addEventListener('click', function (e) {
+      var btn = e.target.closest('.hw-mobile__panel-swatch');
+      if (!btn) return;
+      panelSizes.querySelectorAll('.hw-mobile__panel-swatch').forEach(function (b) {
+        b.classList.remove('hw-mobile__panel-swatch--active');
+      });
+      btn.classList.add('hw-mobile__panel-swatch--active');
+    });
+
+    panelSwitch.addEventListener('click', function () {
+      var activeColor = panelColors.querySelector('.hw-mobile__panel-swatch--active');
+      if (activeColor) {
+        currentColor = activeColor.getAttribute('data-color');
+      }
+      var activeSize = panelSizes.querySelector('.hw-mobile__panel-swatch--active');
+      if (activeSize) {
+        currentSize = parseInt(activeSize.getAttribute('data-size'));
+      }
+      panelOverlay.classList.remove('is-open');
+    });
+
+    panelClose.addEventListener('click', function () {
+      panelOverlay.classList.remove('is-open');
+    });
+
+    panelOverlay.addEventListener('click', function (e) {
+      if (e.target === panelOverlay) {
+        panelOverlay.classList.remove('is-open');
+      }
+    });
+
+    // ===== 竖版模式事件 =====
+    var hwPortrait = document.getElementById('hwPortrait');
+    var portraitCanvas = document.getElementById('hwPortraitCanvas');
+    var portraitCtx = portraitCanvas ? portraitCanvas.getContext('2d') : null;
+    var portraitUndoStack = [];
+    var portraitHasDrawn = false;
+    var portraitLastX, portraitLastY;
+
+    // 竖版canvas初始化
+    function resizePortraitCanvas() {
+      if (!portraitCanvas) return;
+      var canvasArea = document.querySelector('.hw-portrait__canvas-area');
+      if (!canvasArea) return;
+      dpr = window.devicePixelRatio || 1;
+      var w = canvasArea.clientWidth;
+      var h = canvasArea.clientHeight;
+      portraitCanvas.width = w * dpr;
+      portraitCanvas.height = h * dpr;
+      portraitCanvas.style.width = w + 'px';
+      portraitCanvas.style.height = h + 'px';
+      portraitCtx.setTransform(1, 0, 0, 1, 0, 0);
+      portraitCtx.scale(dpr, dpr);
+      if (portraitUndoStack.length > 0) {
+        restorePortraitState(portraitUndoStack[portraitUndoStack.length - 1]);
+      }
+    }
+
+    function savePortraitState() {
+      if (portraitCanvas) {
+        portraitUndoStack.push(portraitCanvas.toDataURL());
+      }
+    }
+
+    function restorePortraitState(dataUrl) {
+      if (!portraitCtx || !portraitCanvas) return;
+      var img = new Image();
+      img.onload = function () {
+        portraitCtx.setTransform(1, 0, 0, 1, 0, 0);
+        portraitCtx.clearRect(0, 0, portraitCanvas.width, portraitCanvas.height);
+        portraitCtx.drawImage(img, 0, 0, portraitCanvas.width, portraitCanvas.height);
+        portraitCtx.setTransform(1, 0, 0, 1, 0, 0);
+        portraitCtx.scale(dpr, dpr);
+      };
+      img.src = dataUrl;
+    }
+
+    function resetPortraitCanvas() {
+      if (!portraitCtx || !portraitCanvas) return;
+      portraitCtx.clearRect(0, 0, portraitCanvas.width, portraitCanvas.height);
+      portraitUndoStack = [];
+      portraitHasDrawn = false;
+      updatePortraitDoneButton();
+      savePortraitState();
+    }
+
+    function updatePortraitDoneButton() {
+      var btnDone = document.getElementById('hwPortraitDone');
+      if (btnDone) {
+        if (portraitHasDrawn) {
+          btnDone.classList.remove('is-disabled');
+          btnDone.style.opacity = '1';
+          btnDone.style.pointerEvents = 'auto';
+        } else {
+          btnDone.classList.add('is-disabled');
+          btnDone.style.opacity = '0.4';
+          btnDone.style.pointerEvents = 'none';
+        }
+      }
+    }
+
+    // 竖版绘制事件
+    function getPortraitPos(e) {
+      if (!portraitCanvas) return { x: 0, y: 0 };
+      var rect = portraitCanvas.getBoundingClientRect();
+      var clientX, clientY;
+      if (e.touches) {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+      } else {
+        clientX = e.clientX;
+        clientY = e.clientY;
+      }
+      return { x: clientX - rect.left, y: clientY - rect.top };
+    }
+
+    var isPortraitDrawing = false;
+
+    function startPortraitDraw(e) {
+      e.preventDefault();
+      isPortraitDrawing = true;
+      var pos = getPortraitPos(e);
+      portraitLastX = pos.x;
+      portraitLastY = pos.y;
+      if (portraitCtx) {
+        portraitCtx.beginPath();
+        portraitCtx.arc(portraitLastX, portraitLastY, currentSize / 2, 0, Math.PI * 2);
+        portraitCtx.fillStyle = currentColor;
+        portraitCtx.fill();
+      }
+    }
+
+    function movePortraitDraw(e) {
+      if (!isPortraitDrawing || !portraitCtx) return;
+      e.preventDefault();
+      var pos = getPortraitPos(e);
+      portraitCtx.beginPath();
+      portraitCtx.moveTo(portraitLastX, portraitLastY);
+      portraitCtx.lineTo(pos.x, pos.y);
+      portraitCtx.strokeStyle = currentColor;
+      portraitCtx.lineWidth = currentSize;
+      portraitCtx.lineCap = 'round';
+      portraitCtx.lineJoin = 'round';
+      portraitCtx.stroke();
+      portraitLastX = pos.x;
+      portraitLastY = pos.y;
+    }
+
+    function endPortraitDraw() {
+      if (!isPortraitDrawing) return;
+      isPortraitDrawing = false;
+      portraitHasDrawn = true;
+      updatePortraitDoneButton();
+      savePortraitState();
+    }
+
+    // 绑定竖版canvas事件
+    if (portraitCanvas) {
+      portraitCanvas.addEventListener('touchstart', startPortraitDraw, { passive: false });
+      portraitCanvas.addEventListener('touchmove', movePortraitDraw, { passive: false });
+      portraitCanvas.addEventListener('touchend', endPortraitDraw);
+      portraitCanvas.addEventListener('touchcancel', endPortraitDraw);
+      portraitCanvas.addEventListener('mousedown', startPortraitDraw);
+      portraitCanvas.addEventListener('mousemove', movePortraitDraw);
+      portraitCanvas.addEventListener('mouseup', endPortraitDraw);
+      portraitCanvas.addEventListener('mouseleave', endPortraitDraw);
+    }
+
+    var btnPortraitBack = document.getElementById('hwPortraitBack');
+    var btnPortraitPen = document.getElementById('hwPortraitBtnPen');
+    var btnPortraitRedo = document.getElementById('hwPortraitRedo');
+    var portraitPanelOverlay = document.getElementById('hwPortraitPanelOverlay');
+    var portraitPanelClose = document.getElementById('hwPortraitPanelClose');
+    var portraitPanelBtn = document.getElementById('hwPortraitPanelBtn');
+    var portraitPanelColors = document.getElementById('hwPortraitPanelColors');
+    var portraitPanelSizes = document.getElementById('hwPortraitPanelSizes');
+
+    if (btnPortraitBack) {
+      btnPortraitBack.addEventListener('click', function () {
+        document.getElementById('hwMobile').classList.remove('is-portrait');
+      });
+    }
+    if (btnPortraitPen) {
+      btnPortraitPen.addEventListener('click', function () {
+        portraitPanelOverlay.classList.add('is-open');
+      });
+    }
+    if (portraitPanelClose) {
+      portraitPanelClose.addEventListener('click', function () {
+        portraitPanelOverlay.classList.remove('is-open');
+      });
+    }
+    if (portraitPanelOverlay) {
+      portraitPanelOverlay.addEventListener('click', function (e) {
+        if (e.target === portraitPanelOverlay) {
+          portraitPanelOverlay.classList.remove('is-open');
+        }
+      });
+    }
+    if (portraitPanelBtn) {
+      portraitPanelBtn.addEventListener('click', function () {
+        portraitPanelOverlay.classList.remove('is-open');
+      });
+    }
+    if (portraitPanelColors) {
+      portraitPanelColors.addEventListener('click', function (e) {
+        var btn = e.target.closest('.hw-portrait__panel-swatch');
+        if (!btn) return;
+        portraitPanelColors.querySelectorAll('.hw-portrait__panel-swatch').forEach(function (b) {
+          b.classList.remove('hw-portrait__panel-swatch--active');
+        });
+        btn.classList.add('hw-portrait__panel-swatch--active');
+      });
+    }
+    if (portraitPanelSizes) {
+      portraitPanelSizes.addEventListener('click', function (e) {
+        var btn = e.target.closest('.hw-portrait__panel-swatch');
+        if (!btn) return;
+        portraitPanelSizes.querySelectorAll('.hw-portrait__panel-swatch').forEach(function (b) {
+          b.classList.remove('hw-portrait__panel-swatch--active');
+        });
+        btn.classList.add('hw-portrait__panel-swatch--active');
+      });
+    }
+
+    // 竖版撤销按钮
+    var btnPortraitUndo = document.getElementById('hwPortraitBtnUndo');
+    if (btnPortraitUndo) {
+      btnPortraitUndo.addEventListener('click', function () {
+        if (portraitUndoStack.length > 1) {
+          portraitUndoStack.pop();
+          restorePortraitState(portraitUndoStack[portraitUndoStack.length - 1]);
+          // 撤销后检查是否回到初始空白状态
+          if (portraitUndoStack.length <= 1) {
+            portraitHasDrawn = false;
+            updatePortraitDoneButton();
+          }
+        } else if (portraitUndoStack.length === 1 && portraitCtx && portraitCanvas) {
+          portraitCtx.clearRect(0, 0, portraitCanvas.width, portraitCanvas.height);
+          portraitUndoStack = [];
+          portraitHasDrawn = false;
+          updatePortraitDoneButton();
+        }
+      });
+    }
+    // 竖版重写按钮
+    if (btnPortraitRedo) {
+      btnPortraitRedo.addEventListener('click', function () {
+        resetPortraitCanvas();
+        var guide = document.querySelector('.hw-portrait__guide');
+        if (guide) guide.classList.remove('is-hidden');
+      });
+    }
+    // 竖版完成按钮
+    var btnPortraitDone = document.getElementById('hwPortraitDone');
+    if (btnPortraitDone) {
+      btnPortraitDone.addEventListener('click', function () {
+        if (!portraitHasDrawn) return;
+        applyHandwriteToFieldPortrait();
+      });
+    }
+
+    function applyHandwriteToFieldPortrait() {
+      if (!portraitCanvas) return;
+      var field = window._currentHandwriteField;
+      if (!field) return;
+      var dataUrl = portraitCanvas.toDataURL('image/png');
+      var body = field.querySelector('.ns-envelope-editor-field__body');
+      if (!body) return;
+      var img = body.querySelector('.ns-envelope-editor-field__handwrite-image');
+      if (!img) {
+        img = document.createElement('img');
+        img.className = 'ns-envelope-editor-field__handwrite-image';
+        img.alt = '';
+        img.draggable = false;
+        body.appendChild(img);
+      }
+      img.src = dataUrl;
+      img.classList.add('is-visible');
+      var guide = body.querySelector('[data-handwrite-guide]');
+      if (guide) guide.classList.add('is-hidden');
+      var icon = body.querySelector('.ns-envelope-editor-field__icon');
+      if (icon) icon.style.display = 'none';
+      var label = body.querySelector('.ns-envelope-editor-field__label');
+      if (label) label.style.display = 'none';
+      close();
+    }
+    btnRedo.addEventListener('click', function () {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      undoStack = [];
+      hasDrawn = false;
+      updateDoneButton();
+      saveState();
+      if (guideEl) guideEl.classList.remove('is-hidden');
+    });
+
+    btnDone.addEventListener('click', function () {
+      if (this.classList.contains('is-disabled')) return;
+      applyHandwriteToField();
+    });
+
+    btnBack.addEventListener('click', function () {
+      if (window._hwMobileOnClose) {
+        window._hwMobileOnClose();
+      }
+    });
+
+    // ===== 关闭/打开 =====
+    function open() {
+      var field = window._currentHandwriteField;
+      if (field) {
+        var guide = field.getAttribute('data-field-handwrite-guide') || '';
+        guideEl.textContent = guide;
+        if (guide) {
+          guideEl.classList.remove('is-hidden');
+        } else {
+          guideEl.classList.add('is-hidden');
+        }
+      }
+      
+      // 根据模式决定是否启用横屏旋转
+      if (urlMode === 'landscape') {
+        enableLandscapeRotate();
+      }
+      
+      document.body.style.overflow = 'hidden';
+      
+      // 延迟初始化画布（等待DOM更新后获取正确尺寸）
+      setTimeout(function () {
+        resizeCanvas();
+        resetCanvas();
+        
+        // 如果是竖版模式且URL指定了portrait，直接切换
+        if (urlMode === 'portrait') {
+          document.getElementById('hwMobile').classList.add('is-portrait');
+          setTimeout(function () {
+            if (portraitCanvas) {
+              resizePortraitCanvas();
+              if (portraitUndoStack.length === 0) {
+                savePortraitState();
+              }
+            }
+          }, 50);
+        }
+      }, 100);
+    }
+
+    function close() {
+      disableLandscapeRotate();
+      document.body.style.overflow = '';
+      // 清除模式类
+      document.getElementById('hwMobile').classList.remove('is-portrait');
+    }
+
+    // ===== 将绘制内容保存到控件 =====
+    function applyHandwriteToField() {
+      var field = window._currentHandwriteField;
+      if (!field) return;
+
+      // 先隐藏引导文案
+      if (guideEl) guideEl.classList.add('is-hidden');
+
+      // 保存为图片，等比缩放后贴到 field 上
+      var dataUrl = canvas.toDataURL('image/png');
+      var body = field.querySelector('.ns-envelope-editor-field__body');
+      if (!body) return;
+
+      var img = body.querySelector('.ns-envelope-editor-field__handwrite-image');
+      if (!img) {
+        img = document.createElement('img');
+        img.className = 'ns-envelope-editor-field__handwrite-image';
+        img.alt = '';
+        img.draggable = false;
+        body.appendChild(img);
+      }
+      img.src = dataUrl;
+      img.classList.add('is-visible');
+
+      // 隐藏引导文案和icon
+      var guide = body.querySelector('[data-handwrite-guide]');
+      if (guide) guide.classList.add('is-hidden');
+      var icon = body.querySelector('.ns-envelope-editor-field__icon');
+      if (icon) icon.style.display = 'none';
+      var label = body.querySelector('.ns-envelope-editor-field__label');
+      if (label) label.style.display = 'none';
+
+      close();
+    }
+
+    // ===== PC 端引导文案同步 =====
+    function syncGuideText(text) {
+      guideEl.textContent = text || '';
+      if (text) {
+        guideEl.classList.remove('is-hidden');
+      } else {
+        guideEl.classList.add('is-hidden');
+      }
+    }
+
+    // ===== 暴露全局接口 =====
+    window._hwMobileOpen = open;
+    window._hwMobileClose = close;
+    window._hwMobileSyncGuide = syncGuideText;
+
+    // 初始状态
+    resizeCanvas();
+    saveState();
+
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('orientationchange', function () {
+      setTimeout(resizeCanvas, 100);
+    });
+  })();
+  </script>
+</body>
+</html>

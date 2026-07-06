@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>控件拖拽编辑 — NotaSign</title>
+  <link rel="stylesheet" href="./notasign-design-system.css" />
+  <link rel="stylesheet" href="./envelope-editor.css" />
+  <style>
+    /* ==========================================================================
+       Handwrite Modal — Overlay
+       ========================================================================== */
+    .handwrite-modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s ease, visibility 0.2s ease;
+    }
+    .handwrite-modal-overlay.is-open {
+      opacity: 1;
+      visibility: visible;
+    }
+    .handwrite-modal {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      width: auto;
+      min-width: 520px;
+      max-width: 90vw;
+      max-height: 80vh;
+      background: #FFFFFF;
+      border-radius: 4px;
+      box-shadow: 0 4px 20px rgba(34, 29, 57, 0.12);
+      overflow: hidden;
+    }
+    .handwrite-modal__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+      padding: 0 16px;
+      border-bottom: 1px solid #EAEBF0;
+      flex-shrink: 0;
+    }
+    .handwrite-modal__tabs {
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 56px;
+      flex: 1;
+    }
+    .handwrite-modal__tab {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 14px;
+      width: 92px;
+      height: 56px;
+      cursor: pointer;
+      position: relative;
+      border: none;
+      background: transparent;
+      font-family: inherit;
+    }
+    .handwrite-modal__tab-label {
+      font-size: 16px;
+      line-height: 24px;
+      text-align: center;
+      color: #262626;
+      font-weight: 400;
+      transition: color 0.15s ease;
+    }
+    .handwrite-modal__tab--active .handwrite-modal__tab-label {
+      font-weight: 500;
+      color: #5F11F1;
+    }
+    .handwrite-modal__tab-indicator {
+      width: 100%;
+      padding: 0 16px;
+      height: 2px;
+      background: transparent;
+      transition: background 0.15s ease;
+    }
+    .handwrite-modal__tab--active .handwrite-modal__tab-indicator {
+      background: #5F11F1;
+    }
+    .handwrite-modal__close {
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      cursor: pointer;
+      opacity: 0.6;
+      transition: opacity 0.15s ease;
+      border: none;
+      background: none;
+      padding: 0;
+    }
+    .handwrite-modal__close:hover { opacity: 1; }
+    .handwrite-modal__body {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      flex: 1;
+      min-height: 0;
+    }
+    .handwrite-modal__canvas-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+      min-height: 0;
+    }
+    .handwrite-modal__canvas-inner {
+      position: relative;
+      border-radius: 0;
+      overflow: hidden;
+      min-height: 0;
+      background-size: 100% 100%;
+      background-position: center;
+      background-repeat: no-repeat;
+      user-select: none;
+      -webkit-user-select: none;
+      pointer-events: none;
+    }
+    .handwrite-modal__canvas-inner:hover {
+      box-shadow: inset 0 0 0 1px #7B3FF2;
+    }
+    .handwrite-modal__guide-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1;
+      pointer-events: none;
+      user-select: none;
+      font-size: 20px;
+      color: rgba(0, 0, 0, 0.25);
+      white-space: nowrap;
+    }
+    .handwrite-modal__guide-text.is-hidden {
+      display: none;
+    }
+    .handwrite-modal__canvas-inner canvas {
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      cursor: crosshair;
+      touch-action: none;
+      pointer-events: auto;
+    }
+    .handwrite-modal__toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      padding: 0 0 16px;
+      flex-shrink: 0;
+    }
+    .handwrite-modal__toolbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 0 16px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .handwrite-modal__toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .handwrite-modal__colors {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .handwrite-modal__sizes {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .handwrite-modal__divider {
+      width: 1px;
+      height: 24px;
+      background: #EAEBF0;
+      flex-shrink: 0;
+    }
+    .handwrite-modal__toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .handwrite-modal__footer {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 16px;
+      padding: 16px 16px 16px 0;
+      border-top: 1px solid #EAEBF0;
+      flex-shrink: 0;
+    }
+    .handwrite-modal__footer-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* ==========================================================================
+       Color Swatches
+       ========================================================================== */
+    .color-swatch-outer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      background: transparent;
+      transition: background 0.15s ease, box-shadow 0.15s ease;
+      cursor: pointer;
+      flex-shrink: 0;
+      border: none;
+      padding: 0;
+    }
+    .color-swatch-outer:hover { background: #F3F3F3; }
+    .color-swatch-outer.is-active,
+    .color-swatch-outer.is-active:hover { background: #EAEBF0; }
+    .color-swatch-inner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      position: relative;
+    }
+    .color-swatch-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+    }
+
+    /* ==========================================================================
+       Brush Size Selectors
+       ========================================================================== */
+    .brush-size-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 23px;
+      height: 24px;
+      border-radius: 4px;
+      background: transparent;
+      transition: background 0.15s ease, box-shadow 0.15s ease;
+      cursor: pointer;
+      flex-shrink: 0;
+      padding: 0;
+      border: none;
+    }
+    .brush-size-btn:hover { background: #F3F3F3; }
+    .brush-size-btn.is-active,
+    .brush-size-btn.is-active:hover { background: #EAEBF0; }
+    .brush-size-btn svg { display: block; }
+
+    /* ==========================================================================
+       Toolbar Action Buttons (Undo / Clear)
+       ========================================================================== */
+    .toolbar-action-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      height: 24px;
+      padding: 0;
+      border-radius: 4px;
+      background: transparent;
+      color: #262626;
+      cursor: pointer;
+      transition: background 0.15s ease;
+      font-size: 14px;
+      line-height: 22px;
+      font-family: "PingFang SC", "PingFang HK", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      white-space: nowrap;
+      border: none;
+    }
+    .toolbar-action-btn:hover {
+      background: transparent;
+      color: #5F11F1;
+    }
+    .toolbar-action-btn:hover .toolbar-action-btn__text {
+      color: #5F11F1;
+    }
+    .toolbar-action-btn .toolbar-action-btn__text {
+      color: #262626;
+    }
+    .toolbar-action-btn__icon {
+      width: 15px;
+      height: 15px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ==========================================================================
+       Footer Buttons
+       ========================================================================== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 80px;
+      height: 36px;
+      padding: 10px;
+      border-radius: 2px;
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 22px;
+      font-family: "PingFang SC", "PingFang HK", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      white-space: nowrap;
+      transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+      border: none;
+    }
+    .btn--cancel {
+      background: #FFFFFF;
+      border: 1px solid #EAEBF0;
+      color: #221D39;
+      padding: 10px;
+      cursor: pointer;
+    }
+    .btn--cancel:hover {
+      background: rgba(95, 17, 241, 0.04);
+      border-color: #5F11F1;
+      color: #5F11F1;
+    }
+    .btn--confirm {
+      background: #5F11F1;
+      border: 1px solid #5F11F1;
+      color: #FFFFFF;
+      padding: 5px 16px;
+      cursor: pointer;
+    }
+    .btn--confirm:hover {
+      background: #8F59F4;
+      border-color: #8F59F4;
+    }
+    .btn--confirm.is-disabled {
+      background: #5F11F1;
+      border-color: #5F11F1;
+      color: #FFFFFF;
+      opacity: 0.45;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="./components/i18n.js" defer></script>
+  <script src="./components/select.js" defer></script>
+  <script src="./components/input-number.js" defer></script>
+  <script src="./envelope-editor.js" defer></script>
+</head>
+<body class="ns-envelope-editor-app">
+  <header class="ns-envelope-editor-topbar">
+    <div class="ns-envelope-editor-topbar__left">
+      <div class="ns-envelope-editor-topbar__nav">
+        <button class="ns-icon-btn ns-envelope-editor-icon-btn ns-envelope-editor-icon-btn--close" type="button" aria-label="关闭">
+          <img src="assets/envelope-editor/icon-close.svg" width="20" height="20" alt="" />
+        </button>
+        <span class="ns-envelope-editor-topbar__divider" aria-hidden="true"></span>
+        <button class="ns-btn ns-btn--lg ns-btn--secondary ns-btn--secondary-brand ns-envelope-editor-topbar__back" type="button">上一步</button>
+      </div>
+      <h1 class="ns-envelope-editor-topbar__title">请将控件拖放至需填写或签署的位置后发送信封</h1>
+    </div>
+    <div class="ns-envelope-editor-topbar__actions">
+      <div class="ns-app__flyout-wrap">
+        <button type="button" class="ns-app__help-btn" aria-label="帮助" aria-expanded="false" aria-haspopup="menu" data-flyout-trigger="help">
+          <img class="ns-app__help-icon" src="assets/signing-list/icon-help.svg" width="18" height="18" alt="" />
+        </button>
+        <div class="ns-app__flyout ns-app__flyout--help" role="menu" aria-label="帮助" data-flyout="help">
+          <a href="#" class="ns-app__flyout-menu-item" role="menuitem"><img src="assets/signing-list/help-center.svg" width="20" height="20" alt="" /><span>帮助中心</span></a>
+          <a href="#" class="ns-app__flyout-menu-item" role="menuitem"><img src="assets/signing-list/help-service.svg" width="20" height="20" alt="" /><span>联系客服</span></a>
+          <a href="#" class="ns-app__flyout-menu-item" role="menuitem"><img src="assets/signing-list/help-feedback.svg" width="20" height="20" alt="" /><span>意见反馈</span></a>
+        </div>
+      </div>
+      <div class="ns-envelope-editor-topbar__button-group">
+        <button class="ns-btn ns-btn--lg ns-btn--secondary ns-btn--secondary-brand ns-envelope-editor-topbar__action" type="button">保存</button>
+        <button class="ns-btn ns-btn--lg ns-btn--primary ns-envelope-editor-topbar__action" type="button">发送</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="ns-envelope-editor" data-envelope-editor>
+    <aside class="ns-envelope-editor-tools" aria-label="控件面板">
+      <div class="ns-envelope-editor-party">
+        <button class="ns-envelope-editor-party__trigger" type="button" data-party-menu-trigger aria-haspopup="listbox" aria-expanded="false">
+          <span class="ns-envelope-editor-party__dot" aria-hidden="true"></span>
+          <span class="ns-envelope-editor-party__name" data-active-party-name>法大大科技有限公司</span>
+          <img class="ns-envelope-editor-party__chevron" src="assets/envelope-editor/icon-chevron-down.svg" width="16" height="16" alt="" draggable="false" />
+        </button>
+        <div class="ns-envelope-editor-party__menu" role="listbox" data-party-menu hidden>
+          <button class="ns-envelope-editor-party__option" type="button" role="option" aria-selected="false" data-party="gray">
+            <span class="ns-envelope-editor-party__dot" aria-hidden="true"></span>
+            发起方填写
+          </button>
+          <button class="ns-envelope-editor-party__option is-active" type="button" role="option" aria-selected="true" data-party="purple">
+            <span class="ns-envelope-editor-party__dot" aria-hidden="true"></span>
+            法大大科技有限公司
+          </button>
+          <button class="ns-envelope-editor-party__option" type="button" role="option" aria-selected="false" data-party="blue">
+            <span class="ns-envelope-editor-party__dot" aria-hidden="true"></span>
+            上海测试公司
+          </button>
+          <button class="ns-envelope-editor-party__option" type="button" role="option" aria-selected="false" data-party="green">
+            <span class="ns-envelope-editor-party__dot" aria-hidden="true"></span>
+            采购方代表
+          </button>
+          <button class="ns-envelope-editor-party__option" type="button" role="option" aria-selected="false" data-party="orange">
+            <span class="ns-envelope-editor-party__dot" aria-hidden="true"></span>
+            销售方代表
+          </button>
+        </div>
+      </div>
+
+      <div class="ns-control-palette ns-envelope-editor-tool-palette">
+        <p class="ns-control-palette__hint">通过将控件放置在文档上，为此接收人添加需填写或签署的内容</p>
+
+        <div class="ns-control-palette__list ns-envelope-editor-tool-list">
+          <div class="ns-control-palette__item-wrap">
+            <button class="ns-control-palette__item ns-envelope-editor-tool" type="button" data-field-type="signature" data-field-label="签名" data-field-icon="assets/envelope-editor/icon-signature.svg">
+              <img class="ns-control-palette__icon ns-envelope-editor-tool__icon" src="assets/envelope-editor/icon-signature.svg" width="16" height="16" alt="" draggable="false" />
+              <span class="ns-control-palette__label">签名</span>
+            </button>
+          </div>
+          <div class="ns-control-palette__item-wrap">
+            <button class="ns-control-palette__item ns-envelope-editor-tool" type="button" data-field-type="seal" data-field-label="印章" data-field-icon="assets/envelope-editor/icon-seal.svg">
+              <img class="ns-control-palette__icon ns-envelope-editor-tool__icon" src="assets/envelope-editor/icon-seal.svg" width="16" height="16" alt="" draggable="false" />
+              <span class="ns-control-palette__label">印章</span>
+            </button>
+          </div>
+          <div class="ns-control-palette__item-wrap">
+            <button class="ns-control-palette__item ns-envelope-editor-tool" type="button" data-field-type="date" data-field-label="签署日期" data-field-icon="assets/envelope-editor/icon-date.svg">
+              <img class="ns-control-palette__icon ns-envelope-editor-tool__icon" src="assets/envelope-editor/icon-date.svg" width="16" height="16" alt="" draggable="false" />
+              <span class="ns-control-palette__label">签署日期</span>
+            </button>
+          </div>
+          <div class="ns-control-palette__item-wrap">
+            <button class="ns-control-palette__item ns-envelope-editor-tool" type="button" data-field-type="text" data-field-label="文本" data-field-icon="assets/envelope-editor/icon-text.svg">
+              <img class="ns-control-palette__icon ns-envelope-editor-tool__icon" src="assets/envelope-editor/icon-text.svg" width="16" height="16" alt="" draggable="false" />
+              <span class="ns-control-palette__label">文本</span>
+            </button>
+          </div>
+          <div class="ns-control-palette__item-wrap">
+            <button class="ns-control-palette__item ns-envelope-editor-tool" type="button" data-field-type="checkbox" data-field-label="复选框" data-field-icon="assets/envelope-editor/icon-checkbox.svg">
+              <img class="ns-control-palette__icon ns-envelope-editor-tool__icon" src="assets/envelope-editor/icon-checkbox.svg" width="16" height="16" alt="" draggable="false" />
+              <span class="ns-control-palette__label">复选框</span>
+            </button>
+          </div>
+          <div class="ns-control-palette__item-wrap">
+            <button class="ns-control-palette__item ns-envelope-editor-tool" type="button" data-field-type="image" data-field-label="图片" data-field-icon="assets/envelope-editor/icon-image.svg">
+              <img class="ns-control-palette__icon ns-envelope-editor-tool__icon" src="assets/envelope-editor/icon-image.svg" width="16" height="16" alt="" draggable="false" />
+              <span class="ns-control-palette__label">图片</span>
+            </button>
+          </div>
+          <div class="ns-control-palette__item-wrap">
+            <button class="ns-control-palette__item ns-envelope-editor-tool" type="button" data-field-type="handwrite" data-field-label="手绘" data-field-icon="assets/envelope-editor/icon-handwrite.svg">
+              <img class="ns-control-palette__icon ns-envelope-editor-tool__icon" src="assets/envelope-editor/icon-handwrite.svg" width="16" height="16" alt="" draggable="false" />
+              <span class="ns-control-palette__label">手绘</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="ns-envelope-editor-subtoolbar">
+      <div class="ns-envelope-editor-toolbar">
+        <div class="ns-envelope-editor-toolbar__center">
+          <button class="ns-envelope-editor-toolbar__btn" type="button" aria-label="缩小" data-zoom-out>−</button>
+          <div class="ns-dropdown ns-envelope-editor-zoom-wrap">
+            <button class="ns-envelope-editor-zoom" type="button" aria-haspopup="listbox" aria-expanded="false" data-zoom-trigger>
+              <span data-zoom-label>100%</span>
+              <img class="ns-envelope-editor-zoom__chevron" src="assets/signing-list/icon-select-chevron.svg" width="12" height="12" alt="" draggable="false" aria-hidden="true" />
+            </button>
+            <div class="ns-dropdown__menu ns-envelope-editor-zoom-menu" role="listbox" data-zoom-menu hidden>
+              <button class="ns-dropdown__item ns-envelope-editor-zoom-option" type="button" role="option" data-zoom-value="0.25">25%</button>
+              <button class="ns-dropdown__item ns-envelope-editor-zoom-option" type="button" role="option" data-zoom-value="0.5">50%</button>
+              <button class="ns-dropdown__item ns-envelope-editor-zoom-option" type="button" role="option" data-zoom-value="0.75">75%</button>
+              <button class="ns-dropdown__item ns-envelope-editor-zoom-option is-active" type="button" role="option" aria-selected="true" data-zoom-value="1">100%</button>
+              <button class="ns-dropdown__item ns-envelope-editor-zoom-option" type="button" role="option" data-zoom-value="1.25">125%</button>
+              <button class="ns-dropdown__item ns-envelope-editor-zoom-option" type="button" role="option" data-zoom-value="1.5">150%</button>
+              <button class="ns-dropdown__item ns-envelope-editor-zoom-option" type="button" role="option" data-zoom-value="2">200%</button>
+              <button class="ns-dropdown__item ns-envelope-editor-zoom-option" type="button" role="option" data-zoom-value="4">400%</button>
+              <button class="ns-dropdown__item ns-envelope-editor-zoom-option ns-envelope-editor-zoom-option--fit" type="button" role="option" data-zoom-fit>适合屏幕</button>
+            </div>
+          </div>
+          <button class="ns-envelope-editor-toolbar__btn" type="button" aria-label="放大" data-zoom-in>+</button>
+        </div>
+      </div>
+      <button class="ns-envelope-editor-thumbs-toggle" type="button" data-thumbs-toggle aria-label="收起文档缩略图" aria-expanded="true">
+        <span class="ns-envelope-editor-thumbs-toggle__label">文档缩略图</span>
+        <img class="ns-envelope-editor-thumbs-toggle__icon" src="assets/envelope-editor/icon-thumbs-panel.svg" width="16" height="16" alt="" draggable="false" />
+      </button>
+    </div>
+
+    <section class="ns-envelope-editor-stage" aria-label="文档编辑区">
+      <div class="ns-envelope-editor-canvas ns-scrollbar-auto" data-canvas>
+        <article class="ns-envelope-editor-pdf" data-pdf-page data-page-id="contract-1-page-1">
+          <div class="ns-envelope-editor-pdf__content" aria-hidden="true">
+            <h2>销售合同英文版</h2>
+            <p class="ns-envelope-editor-pdf__center">CONTRACT</p>
+            <div class="ns-envelope-editor-pdf__grid">
+              <span>日期:</span><span>合同号码:</span>
+              <span>Date:</span><span>Contract No.:</span>
+              <span>买 方：（The Buyers）</span><span>卖方：（The Sellers）</span>
+            </div>
+            <p>兹经买卖双方同意按照以下条款由买方购进，卖方售出以下商品：</p>
+            <p>This contract is made by and between the Buyers and the Sellers; whereby the Buyers agree to buy and the Sellers agree to sell the under-mentioned goods subject to the terms and conditions as stipulated hereinafter:</p>
+            <p>(1) 商品名称:<br />Name of Commodity:</p>
+            <p>(2) 数 量:<br />Quantity:</p>
+            <p>(3) 单 价:<br />Unit price:</p>
+            <p>(4) 总 值:<br />Total Value:</p>
+            <p>(5) 包 装:<br />Packing:</p>
+          </div>
+        </article>
+
+        <article class="ns-envelope-editor-pdf" data-pdf-page data-page-id="contract-1-page-2">
+          <div class="ns-envelope-editor-pdf__content" aria-hidden="true">
+            <h2>销售合同英文版</h2>
+            <p class="ns-envelope-editor-pdf__center">TERMS AND CONDITIONS</p>
+            <p>(6) 装运期限：<br />Time of Shipment:</p>
+            <p>(7) 装运口岸：<br />Port of Loading:</p>
+            <p>(8) 目的口岸：<br />Port of Destination:</p>
+            <p>(9) 付款条件：<br />Terms of Payment:</p>
+            <p>买方须在合同约定期限内完成付款，卖方须根据约定安排发货并提供完整单据。</p>
+            <p>The Buyers shall complete payment within the agreed period, and the Sellers shall arrange shipment and provide complete documents as agreed.</p>
+          </div>
+        </article>
+
+        <article class="ns-envelope-editor-pdf" data-pdf-page data-page-id="contract-1-page-3">
+          <div class="ns-envelope-editor-pdf__content" aria-hidden="true">
+            <h2>销售合同英文版</h2>
+            <p class="ns-envelope-editor-pdf__center">SIGNATURE PAGE</p>
+            <div class="ns-envelope-editor-pdf__grid">
+              <span>买方授权代表：</span><span>卖方授权代表：</span>
+              <span>Buyer Representative:</span><span>Seller Representative:</span>
+            </div>
+            <p>本页为合同签署页，双方确认已阅读并接受全部合同条款。</p>
+            <p>This page is the signature page. Both parties confirm that they have read and accepted all terms and conditions of this contract.</p>
+            <div class="ns-envelope-editor-pdf__signature-grid">
+              <span>签名 / Signature</span>
+              <span>日期 / Date</span>
+              <span>签章 / Seal</span>
+              <span>签名 / Signature</span>
+              <span>日期 / Date</span>
+              <span>签章 / Seal</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="ns-envelope-editor-pdf" data-pdf-page data-page-id="contract-1-page-4">
+          <div class="ns-envelope-editor-pdf__content" aria-hidden="true">
+            <h2>销售合同英文版</h2>
+            <p class="ns-envelope-editor-pdf__center">ATTACHMENT A</p>
+            <p>附件一：商品明细 / Attachment A: Product Details</p>
+            <div class="ns-envelope-editor-pdf__table">
+              <span>序号</span><span>商品名称</span><span>数量</span><span>单价</span>
+              <span>1</span><span>智能签署服务</span><span>12</span><span>USD 280</span>
+              <span>2</span><span>身份认证服务</span><span>8</span><span>USD 120</span>
+              <span>3</span><span>文件存证服务</span><span>20</span><span>USD 60</span>
+            </div>
+            <p>以上商品明细作为合同不可分割的一部分，与主合同具有同等法律效力。</p>
+          </div>
+        </article>
+
+        <article class="ns-envelope-editor-pdf" data-pdf-page data-page-id="contract-1-page-5">
+          <div class="ns-envelope-editor-pdf__content" aria-hidden="true">
+            <h2>销售合同英文版</h2>
+            <p class="ns-envelope-editor-pdf__center">DELIVERY CONFIRMATION</p>
+            <p>交付确认 / Delivery Confirmation</p>
+            <p>买方确认已收到卖方根据合同约定交付的服务资料、账户信息及相关文档。</p>
+            <p>The Buyers confirm receipt of service materials, account information, and related documents delivered by the Sellers under this contract.</p>
+            <div class="ns-envelope-editor-pdf__signature-grid">
+              <span>接收人 / Receiver</span>
+              <span>接收日期 / Date</span>
+              <span>联系电话 / Phone</span>
+              <span>备注 / Remarks</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="ns-envelope-editor-pdf" data-pdf-page data-page-id="contract-2-page-1">
+          <div class="ns-envelope-editor-pdf__content" aria-hidden="true">
+            <h2>测试合同文件2</h2>
+            <p class="ns-envelope-editor-pdf__center">SERVICE ORDER</p>
+            <div class="ns-envelope-editor-pdf__grid">
+              <span>订单编号：</span><span>服务期限：</span>
+              <span>Order No.:</span><span>Service Term:</span>
+            </div>
+            <p>本服务订单用于确认双方约定的签署服务范围、服务期限、账号数量及计费方式。</p>
+            <p>This service order confirms the service scope, term, account quantity, and billing method agreed by both parties.</p>
+          </div>
+        </article>
+
+        <article class="ns-envelope-editor-pdf" data-pdf-page data-page-id="contract-2-page-2">
+          <div class="ns-envelope-editor-pdf__content" aria-hidden="true">
+            <h2>测试合同文件2</h2>
+            <p class="ns-envelope-editor-pdf__center">IMPLEMENTATION PLAN</p>
+            <p>实施计划 / Implementation Plan</p>
+            <div class="ns-envelope-editor-pdf__table">
+              <span>阶段</span><span>工作内容</span><span>负责人</span><span>日期</span>
+              <span>1</span><span>账号开通</span><span>客户成功</span><span>T+1</span>
+              <span>2</span><span>模板配置</span><span>实施顾问</span><span>T+3</span>
+              <span>3</span><span>验收确认</span><span>双方代表</span><span>T+5</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="ns-envelope-editor-pdf" data-pdf-page data-page-id="contract-2-page-3">
+          <div class="ns-envelope-editor-pdf__content" aria-hidden="true">
+            <h2>测试合同文件2</h2>
+            <p class="ns-envelope-editor-pdf__center">ACCEPTANCE PAGE</p>
+            <p>双方确认服务已按订单约定完成交付，并在本页完成验收签署。</p>
+            <p>Both parties confirm that the service has been delivered as agreed and complete acceptance signing on this page.</p>
+            <div class="ns-envelope-editor-pdf__signature-grid">
+              <span>客户代表 / Customer</span>
+              <span>服务代表 / Provider</span>
+              <span>日期 / Date</span>
+              <span>备注 / Remarks</span>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div class="ns-envelope-editor-stage-float" data-stage-float>
+        <div class="ns-envelope-editor-stage-float__group">
+          <button class="ns-envelope-editor-stage-float__btn" type="button" data-cross-seal-toggle aria-label="骑缝章" aria-pressed="false">
+            <img src="assets/envelope-editor/icon-seal.svg" width="20" height="20" alt="" draggable="false" />
+          </button>
+        </div>
+        <div class="ns-envelope-editor-stage-float__group" data-scroll-actions hidden>
+          <button class="ns-envelope-editor-stage-float__btn" type="button" data-scroll-top aria-label="置顶">
+            <img src="assets/envelope-editor/icon-scroll-top.svg" width="20" height="20" alt="" draggable="false" />
+          </button>
+          <button class="ns-envelope-editor-stage-float__btn" type="button" data-scroll-bottom aria-label="置底">
+            <img src="assets/envelope-editor/icon-scroll-bottom.svg" width="20" height="20" alt="" draggable="false" />
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="ns-envelope-editor-thumbs-shell" aria-label="文档缩略图" data-thumbs-shell>
+      <div class="ns-envelope-editor-thumbs ns-scrollbar-auto" data-thumbs>
+        <section class="ns-envelope-editor-doc">
+          <button class="ns-envelope-editor-doc__head" type="button">测试合同文件 <span class="ns-envelope-editor-chevron" aria-hidden="true"></span></button>
+          <ol class="ns-envelope-editor-page-list">
+            <li><button class="ns-envelope-editor-page-thumb is-active" type="button" data-page-target="contract-1-page-1"><span class="ns-envelope-editor-page-thumb__preview ns-envelope-editor-page-thumb__preview--contract"></span><em>1</em></button></li>
+            <li><button class="ns-envelope-editor-page-thumb" type="button" data-page-target="contract-1-page-2"><span class="ns-envelope-editor-page-thumb__preview ns-envelope-editor-page-thumb__preview--terms"></span><em>2</em></button></li>
+            <li><button class="ns-envelope-editor-page-thumb" type="button" data-page-target="contract-1-page-3"><span class="ns-envelope-editor-page-thumb__preview ns-envelope-editor-page-thumb__preview--signature"></span><em>3</em></button></li>
+            <li><button class="ns-envelope-editor-page-thumb" type="button" data-page-target="contract-1-page-4"><span class="ns-envelope-editor-page-thumb__preview ns-envelope-editor-page-thumb__preview--table"></span><em>4</em></button></li>
+            <li><button class="ns-envelope-editor-page-thumb" type="button" data-page-target="contract-1-page-5"><span class="ns-envelope-editor-page-thumb__preview ns-envelope-editor-page-thumb__preview--delivery"></span><em>5</em></button></li>
+          </ol>
+        </section>
+        <section class="ns-envelope-editor-doc">
+          <button class="ns-envelope-editor-doc__head" type="button">测试合同文件2 <span class="ns-envelope-editor-chevron" aria-hidden="true"></span></button>
+          <ol class="ns-envelope-editor-page-list">
+            <li><button class="ns-envelope-editor-page-thumb" type="button" data-page-target="contract-2-page-1"><span class="ns-envelope-editor-page-thumb__preview ns-envelope-editor-page-thumb__preview--order"></span><em>1</em></button></li>
+            <li><button class="ns-envelope-editor-page-thumb" type="button" data-page-target="contract-2-page-2"><span class="ns-envelope-editor-page-thumb__preview ns-envelope-editor-page-thumb__preview--plan"></span><em>2</em></button></li>
+            <li><button class="ns-envelope-editor-page-thumb" type="button" data-page-target="contract-2-page-3"><span class="ns-envelope-editor-page-thumb__preview ns-envelope-editor-page-thumb__preview--acceptance"></span><em>3</em></button></li>
+          </ol>
+        </section>
+      </div>
+    </aside>
+
+    <aside class="ns-envelope-editor-props" aria-label="控件编辑浮窗" data-props-panel hidden>
+      <div class="ns-envelope-editor-props__head">
+        <h2 data-props-title>手绘</h2>
+        <button class="ns-icon-btn ns-envelope-editor-icon-btn ns-envelope-editor-props__close" type="button" aria-label="关闭控件编辑" data-props-close>
+          <img src="assets/envelope-editor/icon-close.svg" width="20" height="20" alt="" />
+        </button>
+      </div>
+
+      <div class="ns-envelope-editor-props__body">
+        <div class="ns-envelope-editor-party" data-props-party-selector data-party="purple">
+          <button class="ns-envelope-editor-party__trigger" type="button" data-party-menu-trigger aria-haspopup="listbox" aria-expanded="false">
+            <span class="ns-envelope-editor-party__dot" aria-hidden="true"></span>
+            <span class="ns-envelope-editor-party__name" data-props-party-name>法大大科技有限公司</span>
+            <img class="ns-envelope-editor-party__chevron" src="assets/envelope-editor/icon-chevron-down.svg" width="16" height="16" alt="" draggable="false" />
+          </button>
+          <div class="ns-envelope-editor-party__menu" role="listbox" data-party-menu data-props-party-menu hidden>
+            <button class="ns-envelope-editor-party__option" type="button" role="option" aria-selected="false" data-party="gray">
+              <span class="ns-envelope-editor-party__dot" aria-hidden="true"></span>
+              发起方填写
+            </button>
+            <button class="ns-envelope-editor-party__option is-active" type="button" role="option" aria-selected="true" data-party="purple">
+              <span class="ns-envelope-editor-party__dot" aria-hidden="true"></span>
+              法大大科技有限公司
+            </button>
+            <button class="ns-envelope-editor-party__option" type="button" role="option" aria-selected="false" data-party="blue">
+              <span class="ns-envelope-editor-party__dot" aria-hidden="true"></span>
+              上海测试公司
+            </button>
+            <button class="ns-envelope-editor-party__option" type="button" role="option" aria-selected="false" data-party="green">
+              <span class="ns-envelope-editor-party__dot" aria-hidden="true"></span>
+              采购方代表
+            </button>
+            <button class="ns-envelope-editor-party__option" type="button" role="option" aria-selected="false" data-party="orange">
+              <span class="ns-envelope-editor-party__dot" aria-hidden="true"></span>
+              销售方代表
+            </button>
+          </div>
+        </div>
+
+        <label class="ns-check ns-envelope-editor-props__check">
+          <input class="ns-check__input" type="checkbox" checked data-props-required />
+          <span>必填</span>
+        </label>
+
+        <label class="ns-envelope-editor-props__field">
+          <span>控件名称</span>
+          <input class="ns-input" type="text" value="" data-props-name />
+        </label>
+
+        <label class="ns-envelope-editor-props__field">
+          <span>使用提示</span>
+          <textarea class="ns-input ns-textarea ns-envelope-editor-props__textarea" placeholder="请输入" data-props-hint></textarea>
+        </label>
+
+        <fieldset class="ns-envelope-editor-props__field ns-envelope-editor-props__fieldset">
+          <legend>位置</legend>
+          <label><input class="ns-input ns-envelope-editor-input--short" type="text" value="234" inputmode="numeric" data-props-left /> 左侧距离像素</label>
+          <label><input class="ns-input ns-envelope-editor-input--short" type="text" value="234" inputmode="numeric" data-props-top /> 顶部距离像素</label>
+        </fieldset>
+
+        <div class="ns-envelope-editor-props__type-section" data-props-section="seal" hidden>
+          <div class="ns-envelope-editor-props__field">
+            <span>使用范围</span>
+            <div class="ns-select" data-ns-select data-value="authorized-seal" data-default-value="authorized-seal" aria-label="使用范围" data-props-seal-use-scope>
+              <button type="button" class="ns-select__trigger" aria-haspopup="listbox" aria-expanded="false">
+                <span class="ns-select__value">仅允许使用授权图章</span>
+                <img class="ns-select__chevron" src="assets/signing-list/icon-select-chevron.svg" width="16" height="16" alt="" draggable="false" />
+              </button>
+              <div class="ns-select__menu" role="listbox" hidden>
+                <button type="button" class="ns-select__option is-selected" role="option" data-value="authorized-seal" aria-selected="true">仅允许使用授权图章</button>
+                <button type="button" class="ns-select__option" role="option" data-value="all-seal" aria-selected="false">允许使用所有图章</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="ns-envelope-editor-props__field">
+            <span>尺寸规则</span>
+            <div class="ns-select" data-ns-select data-value="control-size" data-default-value="control-size" aria-label="尺寸规则" data-props-seal-size-rule>
+              <button type="button" class="ns-select__trigger" aria-haspopup="listbox" aria-expanded="false">
+                <span class="ns-select__value">按控件设置大小展示</span>
+                <img class="ns-select__chevron" src="assets/signing-list/icon-select-chevron.svg" width="16" height="16" alt="" draggable="false" />
+              </button>
+              <div class="ns-select__menu" role="listbox" hidden>
+                <button type="button" class="ns-select__option is-selected" role="option" data-value="control-size" aria-selected="true">按控件设置大小展示</button>
+                <button type="button" class="ns-select__option" role="option" data-value="seal-size" aria-selected="false">按图章原始大小展示</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ns-envelope-editor-props__type-section" data-props-section="date" hidden>
+          <div class="ns-envelope-editor-props__field">
+            <span>日期格式</span>
+            <div class="ns-select" data-ns-select data-value="YYYY-MM-DD" data-default-value="YYYY-MM-DD" aria-label="日期格式" data-props-date-format>
+              <button type="button" class="ns-select__trigger" aria-haspopup="listbox" aria-expanded="false">
+                <span class="ns-select__value">YYYY-MM-DD</span>
+                <img class="ns-select__chevron" src="assets/signing-list/icon-select-chevron.svg" width="16" height="16" alt="" draggable="false" />
+              </button>
+              <div class="ns-select__menu" role="listbox" hidden>
+                <button type="button" class="ns-select__option is-selected" role="option" data-value="YYYY-MM-DD" aria-selected="true">YYYY-MM-DD</button>
+                <button type="button" class="ns-select__option" role="option" data-value="YYYY/MM/DD" aria-selected="false">YYYY/MM/DD</button>
+                <button type="button" class="ns-select__option" role="option" data-value="YYYY年MM月DD日" aria-selected="false">YYYY年MM月DD日</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="ns-envelope-editor-props__field">
+            <span>字体大小</span>
+            <div class="ns-select" data-ns-select data-value="14" data-default-value="14" aria-label="字体大小" data-props-date-font-size>
+              <button type="button" class="ns-select__trigger" aria-haspopup="listbox" aria-expanded="false">
+                <span class="ns-select__value">14px</span>
+                <img class="ns-select__chevron" src="assets/signing-list/icon-select-chevron.svg" width="16" height="16" alt="" draggable="false" />
+              </button>
+              <div class="ns-select__menu" role="listbox" hidden>
+                <button type="button" class="ns-select__option is-selected" role="option" data-value="12" aria-selected="false">12px</button>
+                <button type="button" class="ns-select__option" role="option" data-value="14" aria-selected="true">14px</button>
+                <button type="button" class="ns-select__option" role="option" data-value="16" aria-selected="false">16px</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ns-envelope-editor-props__type-section" data-props-section="text" hidden>
+          <label class="ns-envelope-editor-props__field">
+            <span>默认文本内容</span>
+            <textarea class="ns-input ns-textarea ns-envelope-editor-props__textarea" placeholder="请输入" data-props-guide-text></textarea>
+          </label>
+
+          <label class="ns-check ns-envelope-editor-props__check">
+            <input class="ns-check__input" type="checkbox" data-props-text-multiline />
+            <span>多行文本</span>
+          </label>
+
+          <div class="ns-envelope-editor-props__field">
+            <span>字体设置</span>
+            <div class="ns-select" data-ns-select data-value="宋体" data-default-value="宋体" aria-label="字体设置" data-props-text-font-family>
+              <button type="button" class="ns-select__trigger" aria-haspopup="listbox" aria-expanded="false">
+                <span class="ns-select__value">宋体</span>
+                <img class="ns-select__chevron" src="assets/signing-list/icon-select-chevron.svg" width="16" height="16" alt="" draggable="false" />
+              </button>
+              <div class="ns-select__menu" role="listbox" hidden>
+                <button type="button" class="ns-select__option is-selected" role="option" data-value="宋体" aria-selected="true">宋体</button>
+                <button type="button" class="ns-select__option" role="option" data-value="黑体" aria-selected="false">黑体</button>
+                <button type="button" class="ns-select__option" role="option" data-value="Arial" aria-selected="false">Arial</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="ns-envelope-editor-props__field">
+            <div class="ns-input-number ns-envelope-editor-props__number" data-props-text-font-size-wrap>
+              <input class="ns-input-number__input" type="text" inputmode="numeric" value="12" aria-label="文本字体大小" data-props-text-font-size />
+              <div class="ns-input-number__controls" aria-hidden="false">
+                <button type="button" class="ns-input-number__btn ns-input-number__btn--increase" aria-label="增加"></button>
+                <button type="button" class="ns-input-number__btn ns-input-number__btn--decrease" aria-label="减少"></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ns-envelope-editor-props__type-section" data-props-section="checkbox" hidden>
+          <div class="ns-envelope-editor-props__field">
+            <span>勾选框值</span>
+            <div class="ns-envelope-editor-props__option-list" data-props-checkbox-options></div>
+            <button class="ns-btn ns-btn--lg ns-btn--secondary ns-btn--secondary-brand ns-btn--block" type="button" data-props-checkbox-add>添加</button>
+          </div>
+        </div>
+
+        <div class="ns-envelope-editor-props__type-section" data-props-section="image" hidden>
+          <div class="ns-envelope-editor-props__field">
+            <span>图片比例</span>
+            <div class="ns-select" data-ns-select data-value="free" data-default-value="free" aria-label="图片比例" data-props-image-ratio>
+              <button type="button" class="ns-select__trigger" aria-haspopup="listbox" aria-expanded="false">
+                <span class="ns-select__value">不限制</span>
+                <img class="ns-select__chevron" src="assets/signing-list/icon-select-chevron.svg" width="16" height="16" alt="" draggable="false" />
+              </button>
+              <div class="ns-select__menu" role="listbox" hidden>
+                <button type="button" class="ns-select__option is-selected" role="option" data-value="free" aria-selected="true">不限制</button>
+                <button type="button" class="ns-select__option" role="option" data-value="keep" aria-selected="false">保持原始比例</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ns-envelope-editor-props__type-section" data-props-section="attachment" hidden>
+          <div class="ns-envelope-editor-props__field">
+            <span>使用范围</span>
+            <label class="ns-check ns-envelope-editor-props__check ns-envelope-editor-props__check--multiline">
+              <input class="ns-check__input" type="checkbox" data-props-attachment-allow-multiple />
+              <span>允许在一个附件控件处，添加多个附件</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="ns-envelope-editor-props__type-section" data-props-section="handwrite" hidden>
+          <div class="ns-envelope-editor-props__field">
+            <span>字体大小</span>
+            <div class="ns-input-number ns-envelope-editor-props__number" data-props-handwrite-font-size-wrap>
+              <input class="ns-input-number__input" type="text" inputmode="numeric" value="14" aria-label="手写字体大小" data-props-handwrite-font-size />
+              <div class="ns-input-number__controls" aria-hidden="false">
+                <button type="button" class="ns-input-number__btn ns-input-number__btn--increase" aria-label="增加"></button>
+                <button type="button" class="ns-input-number__btn ns-input-number__btn--decrease" aria-label="减少"></button>
+              </div>
+            </div>
+          </div>
+
+          <label class="ns-envelope-editor-props__field">
+            <span>引导文案</span>
+            <textarea class="ns-input ns-textarea ns-envelope-editor-props__textarea" placeholder="请输入" data-props-handwrite-guide></textarea>
+          </label>
+        </div>
+      </div>
+
+      <button class="ns-btn ns-btn--lg ns-btn--secondary ns-btn--secondary-brand ns-btn--block ns-envelope-editor-props__delete" type="button" data-delete-field>删除</button>
+    </aside>
+  </main>
+  <!-- Handwrite Modal -->
+  <div class="handwrite-modal-overlay" id="handwriteModalOverlay" aria-hidden="true">
+    <div class="handwrite-modal">
+      <header class="handwrite-modal__header">
+        <div class="handwrite-modal__tabs">
+          <button class="handwrite-modal__tab handwrite-modal__tab--active" data-tab="draw" type="button">
+            <span class="handwrite-modal__tab-label">在此绘制</span>
+            <span class="handwrite-modal__tab-indicator"></span>
+          </button>
+          <button class="handwrite-modal__tab" data-tab="phone" type="button">
+            <span class="handwrite-modal__tab-label">手机手绘</span>
+            <span class="handwrite-modal__tab-indicator"></span>
+          </button>
+        </div>
+        <button class="handwrite-modal__close" type="button" aria-label="关闭" id="handwriteModalClose">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12.0092 2.93012C12.3021 2.63726 12.7769 2.63723 13.0698 2.93012C13.3381 3.19848 13.3606 3.61957 13.1372 3.91351L13.0698 3.99066L9.06 7.99945L13.0698 12.0092C13.3626 12.3021 13.3626 12.7769 13.0698 13.0698C12.8014 13.3381 12.3803 13.3605 12.0864 13.1371L12.0092 13.0698L7.99945 9.06L3.99067 13.0698C3.69778 13.3626 3.223 13.3626 2.93012 13.0698C2.66175 12.8014 2.63932 12.3803 2.86274 12.0864L2.93012 12.0092L6.93891 7.99945L2.93012 3.99066C2.63723 3.69777 2.63723 3.22301 2.93012 2.93012C3.1985 2.66174 3.61956 2.63928 3.91352 2.86273L3.99067 2.93012L7.99945 6.9389L12.0092 2.93012Z" fill="#BDBDBD"/>
+          </svg>
+        </button>
+      </header>
+      <div class="handwrite-modal__body">
+        <div class="handwrite-modal__canvas-wrap">
+          <div class="handwrite-modal__canvas-inner" id="handwriteCanvasInner">
+            <div class="handwrite-modal__guide-text" id="handwriteGuideText"></div>
+            <canvas id="handwriteCanvas"></canvas>
+          </div>
+        </div>
+        <div class="handwrite-modal__toolbar">
+          <div class="handwrite-modal__toolbar-inner">
+            <div class="handwrite-modal__toolbar-left">
+              <div class="handwrite-modal__colors" role="radiogroup" aria-label="画笔颜色">
+                <button class="color-swatch-outer is-active" role="radio" aria-checked="true" aria-label="黑色" data-color="#000000" type="button"><span class="color-swatch-inner"><span class="color-swatch-dot" style="background:#000000;"></span></span></button>
+                <button class="color-swatch-outer" role="radio" aria-checked="false" aria-label="蓝色" data-color="#2C60F2" type="button"><span class="color-swatch-inner"><span class="color-swatch-dot" style="background:#2C60F2;"></span></span></button>
+                <button class="color-swatch-outer" role="radio" aria-checked="false" aria-label="红色" data-color="#EA2C2C" type="button"><span class="color-swatch-inner"><span class="color-swatch-dot" style="background:#EA2C2C;"></span></span></button>
+                <button class="color-swatch-outer" role="radio" aria-checked="false" aria-label="绿色" data-color="#29C645" type="button"><span class="color-swatch-inner"><span class="color-swatch-dot" style="background:#29C645;"></span></span></button>
+                <button class="color-swatch-outer" role="radio" aria-checked="false" aria-label="黄色" data-color="#E9B20B" type="button"><span class="color-swatch-inner"><span class="color-swatch-dot" style="background:#E9B20B;"></span></span></button>
+                <button class="color-swatch-outer" role="radio" aria-checked="false" aria-label="粉色" data-color="#E90E9A" type="button"><span class="color-swatch-inner"><span class="color-swatch-dot" style="background:#E90E9A;"></span></span></button>
+              </div>
+              <span class="handwrite-modal__divider"></span>
+              <div class="handwrite-modal__sizes" role="radiogroup" aria-label="画笔粗细">
+                <button class="brush-size-btn is-active" role="radio" aria-checked="true" aria-label="细" data-line-width="2" type="button">
+                  <svg width="15" height="12" viewBox="0 0 15 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.76428 0.0825231C8.51076 -0.0799334 9.21824 -0.0218261 9.70524 0.431108C10.0599 0.761018 10.1759 1.18491 10.1286 1.63549C10.0829 2.07062 9.88618 2.53816 9.61632 3.0076C9.0758 3.94773 8.17519 5.0069 7.29243 6.01553C6.39695 7.0387 5.52077 8.00914 4.98368 8.80421C4.71337 9.20445 4.55355 9.52633 4.50577 9.76509C4.48276 9.88016 4.48943 9.95762 4.50678 10.0086C4.52239 10.0543 4.55333 10.1001 4.62197 10.145C4.67701 10.1809 4.80913 10.2091 5.09281 10.1157C5.36396 10.0264 5.70161 9.84867 6.0941 9.59939C6.87776 9.10165 7.80785 8.36708 8.75345 7.6362C9.68792 6.91393 10.6407 6.19305 11.4411 5.75788C11.8391 5.54151 12.2276 5.37931 12.5747 5.33554C12.9345 5.29019 13.2933 5.37067 13.5346 5.69019C13.8929 6.16463 13.7161 6.73051 13.4659 7.19062C13.207 7.6667 12.7882 8.18136 12.4141 8.65366C12.0251 9.14475 11.6867 9.58806 11.525 9.96515C11.4456 10.1504 11.4228 10.2882 11.436 10.3885C11.4475 10.4751 11.4887 10.5614 11.6078 10.6492C11.9268 10.8841 12.3613 10.8098 12.9304 10.4299C13.4804 10.0627 14.0278 9.48904 14.4591 9.01235C14.5741 8.88532 14.7705 8.87535 14.8976 8.99012C15.0248 9.10513 15.0349 9.30151 14.9199 9.42863C14.4896 9.9042 13.8962 10.5314 13.2749 10.9462C12.6724 11.3485 11.9042 11.6377 11.24 11.1483C10.9986 10.9704 10.8565 10.7398 10.8207 10.4703C10.7868 10.2146 10.8524 9.95659 10.9541 9.71962C11.1547 9.25192 11.5514 8.74198 11.9271 8.26769C12.3175 7.77481 12.6934 7.31158 12.9203 6.89457C13.1558 6.46145 13.1557 6.21791 13.0395 6.06403C12.9743 5.97771 12.8713 5.92432 12.6525 5.95188C12.4212 5.98104 12.1137 6.09878 11.7371 6.3035C10.9885 6.71057 10.0762 7.39848 9.13336 8.12725C8.20163 8.8474 7.24114 9.60639 6.42652 10.1238C6.01993 10.382 5.63108 10.5924 5.2868 10.7058C4.95549 10.8148 4.58325 10.8609 4.28247 10.6643C4.10915 10.5509 3.98314 10.3977 3.91873 10.2087C3.85617 10.0248 3.8592 9.83066 3.89651 9.64385C3.96952 9.27879 4.18903 8.87173 4.4694 8.45664C5.03445 7.62015 5.94663 6.6095 6.82462 5.60633C7.7151 4.58888 8.57415 3.57529 9.0788 2.69741C9.33137 2.25796 9.47882 1.87961 9.51124 1.57083C9.54203 1.27753 9.46941 1.0594 9.2829 0.885783C9.01414 0.635779 8.55901 0.544319 7.89563 0.688757C7.23997 0.831557 6.44659 1.19276 5.59194 1.74158C3.88507 2.83769 1.9973 4.64202 0.56828 6.76322C0.472484 6.90534 0.278991 6.94285 0.136843 6.84709C-0.00516743 6.75126 -0.0427541 6.55775 0.052981 6.41565C1.52698 4.22776 3.47526 2.36307 5.25649 1.21921C6.14579 0.648133 7.00995 0.246763 7.76428 0.0825231Z" fill="#262626"/></svg>
+                </button>
+                <button class="brush-size-btn" role="radio" aria-checked="false" aria-label="中" data-line-width="6" type="button">
+                  <svg width="16" height="12" viewBox="0 0 16 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.98953 0.0893473C8.77604 -0.0819005 9.60939 -0.0406358 10.2043 0.512739C10.6417 0.919787 10.7788 1.44562 10.7234 1.97344C10.6713 2.47055 10.4508 2.98115 10.173 3.46438C9.61588 4.43354 8.69523 5.51269 7.81816 6.51482C6.91613 7.54545 6.06081 8.49332 5.5389 9.26586C5.27405 9.65793 5.14361 9.9373 5.10845 10.1126C5.10552 10.1273 5.10472 10.1403 5.10341 10.1509C5.14064 10.1471 5.20179 10.1379 5.29394 10.1076C5.52788 10.0305 5.83904 9.86983 6.22338 9.62574C6.98996 9.13886 7.90286 8.4169 8.85345 7.68217C9.77242 6.9447 10.7512 6.20294 11.5906 5.74654C12.0037 5.52201 12.4665 5.31932 12.9224 5.26179C13.3849 5.20349 13.9466 5.29146 14.3538 5.75152L14.4324 5.84907L14.533 5.99638C14.9812 6.73976 14.6592 7.53822 14.4145 7.98814C14.1279 8.51513 13.6719 9.07132 13.3196 9.51605C12.9534 9.97829 12.6915 10.3306 12.5581 10.604C12.6627 10.5748 12.8132 10.5088 13.009 10.3781C13.481 10.063 13.9765 9.55104 14.4026 9.08007C14.7425 8.70439 15.3229 8.67547 15.6986 9.01537C16.0737 9.35525 16.1027 9.93483 15.7633 10.3104C15.3404 10.7777 14.7104 11.4486 14.0283 11.904C13.4017 12.3222 12.3154 12.8199 11.3209 12.0871C10.9624 11.8229 10.7239 11.4519 10.6649 11.0061C10.6114 10.6013 10.7192 10.2302 10.8411 9.94606C11.077 9.39616 11.5243 8.82802 11.8813 8.37733C12.239 7.92579 12.5356 7.55126 12.7323 7.22568C12.6537 7.26188 12.565 7.30553 12.4666 7.35906C11.78 7.73235 10.9205 8.37743 9.98308 9.10197C9.07897 9.80078 8.10363 10.5727 7.27067 11.1017C6.85601 11.3651 6.42188 11.6033 6.01052 11.7387C5.63705 11.8617 5.03323 11.9817 4.49455 11.6292C4.22085 11.4501 4.00489 11.1932 3.89334 10.8658C3.78707 10.5535 3.79954 10.2469 3.85054 9.99184C3.94737 9.50782 4.22148 9.02373 4.50749 8.6003C5.09169 7.73547 6.02683 6.70115 6.87451 5.73261C7.75921 4.72176 8.56271 3.76783 9.02453 2.96445C9.25652 2.56087 9.35399 2.27542 9.37291 2.09549C9.38699 1.96141 9.35847 1.94834 9.34007 1.93125C9.29039 1.88504 9.09125 1.76307 8.51987 1.88745C7.97106 2.00694 7.25848 2.32315 6.45048 2.84202C4.84228 3.87476 3.0411 5.59197 1.67762 7.61587C1.39452 8.03594 0.824667 8.14676 0.404533 7.86372C-0.0154347 7.58059 -0.126328 7.01072 0.156683 6.59063C1.6531 4.36947 3.631 2.47212 5.45908 1.29819C6.36921 0.71373 7.2894 0.277725 8.12968 0.0947711Z" fill="#262626"/></svg>
+                </button>
+                <button class="brush-size-btn" role="radio" aria-checked="false" aria-label="粗" data-line-width="14" type="button">
+                  <svg width="16" height="13" viewBox="0 0 16 13" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.12968 0.0947711C8.94726 -0.0831936 9.89441 -0.0578989 10.5893 0.58848C11.104 1.0674 11.2602 1.68793 11.1974 2.2866C11.1394 2.83963 10.8979 3.38739 10.6151 3.87921C10.0473 4.86697 9.11747 5.95567 8.2551 6.941C7.35595 7.96835 6.52998 8.88421 6.02843 9.62654C5.9982 9.6713 5.97083 9.7152 5.94482 9.75594C6.04862 9.6975 6.16363 9.63138 6.28723 9.55288C7.02891 9.0818 7.91485 8.38046 8.86029 7.64971C9.77242 6.9447 10.7512 6.20294 11.5906 5.74654C12.0037 5.52201 12.4665 5.31932 12.9224 5.26179C13.3849 5.20349 13.9466 5.29146 14.3538 5.75152L14.4324 5.84907L14.533 5.99638C14.9812 6.73976 14.6592 7.53822 14.4145 7.98814C14.1279 8.51513 13.6719 9.07132 13.3196 9.51605C12.9534 9.97829 12.6915 10.3306 12.5581 10.604C12.6627 10.5748 12.8132 10.5088 13.009 10.3781C13.481 10.063 13.9765 9.55104 14.4026 9.08007C14.7425 8.70439 15.3229 8.67547 15.6986 9.01537C16.0737 9.35525 16.1027 9.93483 15.7633 10.3104C15.3404 10.7777 14.7104 11.4486 14.0283 11.904C13.4017 12.3222 12.3154 12.8199 11.3209 12.0871C10.9624 11.8229 10.7239 11.4519 10.6649 11.0061C10.6114 10.6013 10.7192 10.2302 10.8411 9.94606C11.077 9.39616 11.5243 8.82802 11.8813 8.37733C12.239 7.92579 12.5356 7.55126 12.7323 7.22568C12.6537 7.26188 12.565 7.30553 12.4666 7.35906C11.78 7.73235 10.9205 8.37743 9.98308 9.10197C9.07897 9.80078 8.10363 10.5727 7.27067 11.1017C6.85601 11.3651 6.42188 11.6033 6.01052 11.7387C5.63705 11.8617 5.03323 11.9817 4.49455 11.6292C4.22085 11.4501 4.00489 11.1932 3.89334 10.8658C3.78707 10.5535 3.79954 10.2469 3.85054 9.99184C3.94737 9.50782 4.22148 9.02373 4.50749 8.6003C5.09169 7.73547 6.02683 6.70115 6.87451 5.73261C7.75921 4.72176 8.56271 3.76783 9.02453 2.96445C9.25652 2.56087 9.35399 2.27542 9.37291 2.09549C9.38699 1.96141 9.35847 1.94834 9.34007 1.93125C9.29039 1.88504 9.09125 1.76307 8.51987 1.88745C7.97106 2.00694 7.25848 2.32315 6.45048 2.84202C4.84228 3.87476 3.0411 5.59197 1.67762 7.61587C1.39452 8.03594 0.824667 8.14676 0.404533 7.86372C-0.0154347 7.58059 -0.126328 7.01072 0.156683 6.59063C1.6531 4.36947 3.631 2.47212 5.45908 1.29819C6.36921 0.71373 7.2894 0.277725 8.12968 0.0947711Z" fill="#262626"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="handwrite-modal__toolbar-right" id="handwriteToolbarRight">
+              <button class="toolbar-action-btn" type="button" aria-label="撤回" id="hwBtnUndo">
+                <span class="toolbar-action-btn__icon">
+                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3.47608 5.52568L5.13358 7.0788C5.37652 7.32437 5.62652 7.72237 5.38358 7.96787C5.14046 8.21337 4.80896 8.21337 4.56596 7.96787L2.02683 5.39649C1.83402 5.20224 1.81996 4.89124 2.01277 4.69699L4.56602 2.08549C4.80902 1.83999 5.14058 1.83999 5.38358 2.08549C5.62658 2.33099 5.37658 2.72905 5.13358 2.97449L3.49765 4.58818H9.07696C11.3213 4.58818 13.125 6.53468 13.125 8.7738C13.125 11.0129 11.3212 13.1514 9.07696 13.1514H3.12677C2.78521 13.1514 2.49865 12.9929 2.49865 12.6514C2.49865 12.3099 2.78521 12.2139 3.12677 12.2139H9.0274C10.5327 12.2139 12.1873 10.2756 12.1873 8.77374C12.1873 7.27193 10.5327 5.5258 9.0274 5.5258H3.47608V5.52568Z" fill="currentColor"/></svg>
+                </span>
+              </button>
+              <button class="toolbar-action-btn" type="button" aria-label="重写" id="hwBtnClear">
+                <span class="toolbar-action-btn__icon">
+                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#clip_hw)"><path d="M5.36628 5.53629L2.27253 8.63004L5.51878 11.8763H6.25003V11.875H6.98253L9.34378 9.51379L5.36628 5.53629ZM6.25003 4.65254L10.2275 8.63004L11.995 6.86192L8.01753 2.88442L6.25003 4.65254ZM8.75003 11.875H13.125V13.125H7.50003L5.00128 13.1263L0.946908 9.07192C0.829738 8.95471 0.763916 8.79577 0.763916 8.63004C0.763916 8.46431 0.829738 8.30537 0.946908 8.18817L7.57503 1.55879C7.63308 1.50068 7.70201 1.45458 7.77788 1.42313C7.85376 1.39168 7.93509 1.37549 8.01722 1.37549C8.09935 1.37549 8.18068 1.39168 8.25656 1.42313C8.33243 1.45458 8.40136 1.50068 8.45941 1.55879L13.3207 6.42004C13.4378 6.53725 13.5036 6.69619 13.5036 6.86192C13.5036 7.02765 13.4378 7.18659 13.3207 7.30379L8.75003 11.875Z" fill="currentColor"/></g><defs><clipPath id="clip_hw"><rect width="15" height="15" fill="white"/></clipPath></defs></svg>
+                </span>
+                <span class="toolbar-action-btn__text">重写</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="handwrite-modal__footer">
+        <div class="handwrite-modal__footer-actions">
+          <button class="btn btn--cancel" type="button" id="hwBtnCancel">取 消</button>
+          <button class="btn btn--confirm is-disabled" type="button" id="hwBtnConfirm">确 定</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function() {
+    // Handwrite Modal Logic
+    var overlay = document.getElementById('handwriteModalOverlay');
+    var closeBtn = document.getElementById('handwriteModalClose');
+    var canvas = document.getElementById('handwriteCanvas');
+    var canvasInner = document.getElementById('handwriteCanvasInner');
+    var ctx = canvas.getContext('2d');
+    var btnConfirm = document.getElementById('hwBtnConfirm');
+    var btnUndo = document.getElementById('hwBtnUndo');
+    var btnClear = document.getElementById('hwBtnClear');
+    var toolbarRight = document.getElementById('handwriteToolbarRight');
+    var isDrawing = false;
+    var brushColor = '#000000';
+    var brushLineWidth = 2;
+    var undoStack = [];
+    var MAX_UNDO = 30;
+    var hasDrawing = false;
+
+    function resizeCanvas() {
+      var rect = canvasInner.getBoundingClientRect();
+      var dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+      canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+      canvas.style.width = rect.width + 'px';
+      canvas.style.height = rect.height + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function restoreState(dataUrl) {
+      var img = new Image();
+      img.onload = function() {
+        var rect = canvasInner.getBoundingClientRect();
+        var dpr = window.devicePixelRatio || 1;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, rect.width, rect.height);
+        ctx.drawImage(img, 0, 0, rect.width, rect.height);
+      };
+      img.src = dataUrl;
+    }
+
+    function saveState() {
+      undoStack.push(canvas.toDataURL());
+      if (undoStack.length > MAX_UNDO) undoStack.shift();
+    }
+
+    function enterDrawingState() {
+      if (hasDrawing) return;
+      hasDrawing = true;
+      btnConfirm.classList.remove('is-disabled');
+      btnUndo.style.display = 'flex';
+      btnClear.style.display = 'flex';
+    }
+
+    function resetToInitialState() {
+      hasDrawing = false;
+      btnConfirm.classList.add('is-disabled');
+      btnUndo.style.display = 'none';
+      btnClear.style.display = 'none';
+    }
+
+    btnUndo.style.display = 'none';
+    btnClear.style.display = 'none';
+
+    function getPos(e) {
+      var rect = canvas.getBoundingClientRect();
+      return {
+        x: (e.touches ? e.touches[0].clientX : e.clientX) - rect.left,
+        y: (e.touches ? e.touches[0].clientY : e.clientY) - rect.top
+      };
+    }
+
+    function startDraw(e) {
+      isDrawing = true;
+      var pos = getPos(e);
+      ctx.beginPath();
+      ctx.moveTo(pos.x, pos.y);
+      ctx.strokeStyle = brushColor;
+      ctx.lineWidth = brushLineWidth;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+    }
+
+    function draw(e) {
+      if (!isDrawing) return;
+      e.preventDefault();
+      var pos = getPos(e);
+      ctx.lineTo(pos.x, pos.y);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(pos.x, pos.y);
+    }
+
+    function endDraw() {
+      if (!isDrawing) return;
+      isDrawing = false;
+      ctx.beginPath();
+      saveState();
+      enterDrawingState();
+    }
+
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', endDraw);
+    canvas.addEventListener('mouseleave', endDraw);
+    canvas.addEventListener('touchstart', function(e) { e.preventDefault(); startDraw(e); });
+    canvas.addEventListener('touchmove', function(e) { e.preventDefault(); draw(e); });
+    canvas.addEventListener('touchend', endDraw);
+
+    // Color swatches
+    var colorSwatches = overlay.querySelectorAll('.color-swatch-outer');
+    colorSwatches.forEach(function(swatch) {
+      swatch.addEventListener('click', function() {
+        colorSwatches.forEach(function(s) { s.classList.remove('is-active'); s.setAttribute('aria-checked', 'false'); });
+        this.classList.add('is-active');
+        this.setAttribute('aria-checked', 'true');
+        brushColor = this.getAttribute('data-color');
+      });
+    });
+
+    // Brush sizes
+    var sizeButtons = overlay.querySelectorAll('.brush-size-btn');
+    sizeButtons.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        sizeButtons.forEach(function(b) { b.classList.remove('is-active'); b.setAttribute('aria-checked', 'false'); });
+        this.classList.add('is-active');
+        this.setAttribute('aria-checked', 'true');
+        brushLineWidth = parseInt(this.getAttribute('data-line-width'), 10);
+      });
+    });
+
+    btnClear.addEventListener('click', function() {
+      var rect = canvasInner.getBoundingClientRect();
+      ctx.clearRect(0, 0, rect.width, rect.height);
+      undoStack = [];
+      saveState();
+      resetToInitialState();
+    });
+
+    btnUndo.addEventListener('click', function() {
+      if (undoStack.length <= 1) return;
+      undoStack.pop();
+      restoreState(undoStack[undoStack.length - 1]);
+      if (undoStack.length <= 1) resetToInitialState();
+    });
+
+    btnConfirm.addEventListener('click', function() {
+      if (btnConfirm.classList.contains('is-disabled')) return;
+      applyHandwriteToField();
+      closeModal();
+    });
+
+    document.getElementById('hwBtnCancel').addEventListener('click', function() {
+      closeModal();
+    });
+
+    closeBtn.addEventListener('click', function() {
+      closeModal();
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        if (undoStack.length <= 1) return;
+        undoStack.pop();
+        restoreState(undoStack[undoStack.length - 1]);
+        if (undoStack.length <= 1) resetToInitialState();
+      }
+    });
+
+    function openModal() {
+      var field = window._currentHandwriteField;
+      var modal = document.querySelector('.handwrite-modal');
+      var guideTextEl = document.getElementById('handwriteGuideText');
+
+      if (guideTextEl) {
+        var guide = field ? (field.getAttribute('data-field-handwrite-guide') || '') : '';
+        guideTextEl.textContent = guide;
+        guideTextEl.classList.remove('is-hidden');
+        var fontSize = field ? (field.getAttribute('data-field-handwrite-font-size') || '14') : '14';
+        guideTextEl.style.fontSize = fontSize + 'px';
+      }
+
+      // 画布尺寸：直接使用控件在页面上缩放后的实际显示尺寸，与截图坐标系一致
+      if (field && modal) {
+        var fieldRect = field.getBoundingClientRect();
+        var fieldW = fieldRect.width;
+        var fieldH = fieldRect.height;
+        var maxW = 1100; // 弹窗画布区域最大宽度（留出一些边距）
+        var maxH = 500;  // 弹窗画布区域最大高度（确保总弹窗高度不超过 80vh）
+
+        var scale = Math.min(maxW / fieldW, maxH / fieldH);
+        var canvasW = Math.round(fieldW * scale);
+        var canvasH = Math.round(fieldH * scale);
+
+        canvasInner.style.width = canvasW + 'px';
+        canvasInner.style.height = canvasH + 'px';
+
+        // 弹窗宽度自适应：跟随画布宽度，但确保底部工具栏和按钮能正常显示
+        var modalMinW = 520;
+        var modalW = Math.max(canvasW + 32, modalMinW); // +32 是 canvas-wrap 的 padding
+        modalW = Math.min(modalW, window.innerWidth * 0.9);
+        modal.style.width = modalW + 'px';
+      }
+
+      overlay.classList.add('is-open');
+      overlay.setAttribute('aria-hidden', 'false');
+
+      resizeCanvas();
+      undoStack = [];
+      saveState();
+      resetToInitialState();
+      // Capture background
+      captureBackground();
+    }
+
+    function closeModal() {
+      overlay.classList.remove('is-open');
+      overlay.setAttribute('aria-hidden', 'true');
+    }
+
+    function applyHandwriteToField() {
+      var field = window._currentHandwriteField;
+      if (!field) return;
+      var dataUrl = canvas.toDataURL('image/png');
+
+      var body = field.querySelector('.ns-envelope-editor-field__body');
+      if (!body) return;
+
+      var img = body.querySelector('.ns-envelope-editor-field__handwrite-image');
+      if (!img) {
+        img = document.createElement('img');
+        img.className = 'ns-envelope-editor-field__handwrite-image';
+        img.alt = '';
+        img.draggable = false;
+        body.appendChild(img);
+      }
+      img.src = dataUrl;
+      img.classList.add('is-visible');
+
+      var guide = body.querySelector('[data-handwrite-guide]');
+      if (guide) guide.classList.add('is-hidden');
+
+      // 隐藏左侧图标
+      var icon = body.querySelector('.ns-envelope-editor-field__icon');
+      if (icon) icon.style.display = 'none';
+
+      var label = body.querySelector('.ns-envelope-editor-field__label');
+      if (label) label.style.display = 'none';
+
+      var guideTextEl = document.getElementById('handwriteGuideText');
+      if (guideTextEl) guideTextEl.classList.add('is-hidden');
+    }
+
+    function captureBackground() {
+      var field = window._currentHandwriteField;
+      if (!field) return;
+      var page = field.closest('[data-pdf-page]');
+      if (!page) return;
+
+      // 临时标识，用于在 clone 中定位对应元素
+      var captureId = 'capture-' + Date.now();
+      field.setAttribute('data-capture', captureId);
+      page.setAttribute('data-capture', captureId + '-page');
+
+      var cropCoords = null;
+
+      html2canvas(page, {
+        scale: 2,
+        backgroundColor: null,
+        onclone: function (clonedDoc) {
+          var canvasCol = clonedDoc.querySelector('.ns-envelope-editor-canvas-column');
+          if (canvasCol) {
+            canvasCol.style.zoom = '1';
+            canvasCol.style.transform = 'none';
+          }
+
+          var clonedField = clonedDoc.querySelector('[data-capture="' + captureId + '"]');
+          var clonedPage = clonedDoc.querySelector('[data-capture="' + (captureId + '-page') + '"]');
+
+          if (clonedField && clonedPage) {
+            cropCoords = {
+              x: clonedField.offsetLeft,
+              y: clonedField.offsetTop,
+              width: clonedField.offsetWidth,
+              height: clonedField.offsetHeight
+            };
+          }
+
+          clonedDoc.querySelectorAll('.ns-envelope-editor-field').forEach(function (el) {
+            el.style.display = 'none';
+          });
+        }
+      }).then(function (screenshot) {
+        field.removeAttribute('data-capture');
+        page.removeAttribute('data-capture');
+
+        if (!cropCoords) {
+          canvasInner.style.backgroundImage = 'none';
+          return;
+        }
+
+        var cropCanvas = document.createElement('canvas');
+        cropCanvas.width = Math.round(cropCoords.width * 2);
+        cropCanvas.height = Math.round(cropCoords.height * 2);
+        var cropCtx = cropCanvas.getContext('2d');
+        cropCtx.drawImage(
+          screenshot,
+          cropCoords.x * 2, cropCoords.y * 2, cropCoords.width * 2, cropCoords.height * 2,
+          0, 0, cropCanvas.width, cropCanvas.height
+        );
+        canvasInner.style.backgroundImage = 'url(' + cropCanvas.toDataURL('image/jpeg', 0.92) + ')';
+        canvasInner.style.backgroundSize = '100% 100%';
+        canvasInner.style.backgroundPosition = 'center';
+      }).catch(function () {
+        field.removeAttribute('data-capture');
+        page.removeAttribute('data-capture');
+        canvasInner.style.backgroundImage = 'none';
+      });
+    }
+
+    window.openHandwriteModal = openModal;
+  })();
+  </script>
+  <!-- Drag Portal (required for palette drag ghost) -->
+  <div data-envelope-editor-drag-portal class="ns-envelope-editor-drag-portal"></div>
+
+</body>
+</html>

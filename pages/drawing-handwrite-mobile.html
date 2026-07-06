@@ -45,9 +45,11 @@
       flex-direction: row;
       width: 100%; height: 100%;
       background: #FFFFFF;
+      overflow: hidden;
     }
 
-    /* ===== 左侧工具栏（72px宽，设计稿规范） ===== */
+    /* ===== 左侧工具栏（Figma #95:877 规范） ===== */
+    /* 尺寸: 72x813, 布局: column, padding 16px 0, space-between */
     .hw-mobile__sidebar {
       flex-shrink: 0;
       display: flex;
@@ -55,15 +57,16 @@
       align-items: center;
       justify-content: space-between;
       padding: 16px 0;
-      gap: 16px;
       background: #FFFFFF;
       border-right: 1px solid #EAEBF0;
       width: 72px;
       height: 100%;
+      min-height: 0;
       z-index: 10;
     }
 
-    /* ===== 返回按钮区域（顶部） ===== */
+    /* ===== 返回按钮区域（Figma #95:878） ===== */
+    /* 尺寸: 24px宽, 布局: column, flex-end对齐, gap 4px */
     .hw-mobile__back-section {
       display: flex;
       flex-direction: column;
@@ -71,60 +74,77 @@
       justify-content: flex-end;
       gap: 4px;
       width: 24px;
-      height: 44px;
       flex-shrink: 0;
     }
     .hw-mobile__back {
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-end;
       gap: 4px;
       cursor: pointer;
-      border: none; background: none;
+      border: none;
+      background: none;
       padding: 0;
       font-family: inherit;
-      width: 100%; height: 100%;
+      width: 100%;
     }
+    /* 返回图标: 24x12 (Figma #95:879) */
     .hw-mobile__back-icon {
-      display: flex; align-items: center; justify-content: center;
-      width: 12px; height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 12px;
     }
-    .hw-mobile__back-icon svg { display: block; width: 100%; height: 100%; }
+    .hw-mobile__back-icon svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    /* "返回"文字: PingFang SC 14px, #262626, height 28 */
     .hw-mobile__back-label {
-      font-size: 14px; line-height: 20px;
+      font-size: 14px;
+      line-height: 28px;
       color: #262626;
       text-align: center;
       white-space: nowrap;
+      font-weight: 400;
     }
 
-    /* ===== 中间工具按钮区域 ===== */
+    /* ===== 中间工具按钮区域（Figma #95:881） ===== */
+    /* 布局: column, stretch, center, gap 16px */
     .hw-mobile__tools-section {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 16px;
-      flex: 1;
       justify-content: center;
+      gap: 16px;
+      flex: 1 1 auto;
+      width: 100%;
+      min-height: 0;
+      overflow: visible;
     }
 
-    /* 工具按钮行（横向排列两个按钮，如设计稿Frame 13539） */
+    /* 工具行（Figma #95:882: row, padding 16px, gap 24px） */
     .hw-mobile__tool-row {
       display: flex;
       flex-direction: row;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
       gap: 24px;
       padding: 16px;
+      width: 100%;
     }
 
-    /* 单个工具按钮 - 设计稿规范：32x32, 圆角5px, 白色背景 */
+    /* 单个工具按钮（Figma EL-0d9e1a84: 32x32, bg #FFF, radius 5.33px） */
     .hw-mobile__tool-btn {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 32px; height: 32px;
-      border-radius: 5px;
+      width: 32px;
+      height: 32px;
+      border-radius: 5.33px;
       background: #FFFFFF;
       border: none;
       cursor: pointer;
@@ -135,51 +155,70 @@
       background: #F5F5F5;
     }
 
-    /* 工具图标 */
+    /* 工具图标容器（Figma EL-62138513: 21.33x21.33） */
     .hw-mobile__tool-icon {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 21px; height: 21px;
+      width: 21.33px;
+      height: 21.33px;
+      overflow: visible;
     }
-    .hw-mobile__tool-icon svg { display: block; width: 100%; height: 100%; }
+    .hw-mobile__tool-icon svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
 
-    /* 颜色圆点特殊处理 - 黑色实心圆 */
+    /* 颜色圆点（Figma EL-fcdbb995: 18.67x18.67, #000000, 圆形） */
     .hw-mobile__color-dot {
-      width: 18px; height: 18px;
+      width: 18.67px;
+      height: 18.67px;
       border-radius: 50%;
       background: #000000;
       display: block;
+      flex-shrink: 0;
     }
 
-    /* 撤销按钮 - 单独一行 */
-    .hw-mobile__tool-btn--single {
-      width: 32px; height: 32px;
-      border-radius: 5px;
-      background: #FFFFFF;
+    /* 撤销按钮（与工具按钮同规格: 32x32, 白色bg, 5px圆角） */
+    .hw-mobile__undo-btn {
       display: flex;
       align-items: center;
       justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 5px;
+      background: #FFFFFF;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      flex-shrink: 0;
+    }
+    .hw-mobile__undo-btn:active {
+      background: #F5F5F5;
     }
 
-    /* ===== 底部操作按钮区域 ===== */
+    /* ===== 底部操作按钮区域（Figma #95:914） ===== */
+    /* 宽度: 40px, 布局: column, stretch, gap 16px */
     .hw-mobile__actions {
       display: flex;
       flex-direction: column;
-      align-items: flex-start;
+      align-items: stretch;
       gap: 16px;
       flex-shrink: 0;
       width: 40px;
     }
 
-    /* 操作按钮 - 设计稿规范：120x40 */
+    /* 操作按钮（Figma: 40x120旋转后, writing-mode竖排） */
     .hw-mobile__btn {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 120px; height: 40px;
+      width: 120px;
+      height: 40px;
       border-radius: 2px;
       font-family: "PingFang SC", sans-serif;
+      font-style: normal;
       font-weight: 400;
       font-size: 16px;
       line-height: 22px;
@@ -188,36 +227,49 @@
       flex-shrink: 0;
       writing-mode: vertical-lr;
       text-orientation: mixed;
+      letter-spacing: 0;
     }
+
+    /* 重写按钮（Figma #95:916: bg #FFF, border 1px #EAEBF0, radius 2px, pad 10px） */
     .hw-mobile__btn--redo {
       background: #FFFFFF;
       border: 1px solid #EAEBF0;
       color: #262626;
     }
-    .hw-mobile__btn--redo:active { background: #F5F5F5; }
+    .hw-mobile__btn--redo:active {
+      background: #F5F5F5;
+    }
+
+    /* 完成按钮（Figma #95:919: bg #5F11F1, radius 2px 0 0 2px, pad 8px 16px, opacity 0.4 disabled） */
     .hw-mobile__btn--done {
       background: #5F11F1;
       color: #FFFFFF;
+      border-radius: 2px;
     }
-    .hw-mobile__btn--done:active { background: #4B0EC1; }
+    .hw-mobile__btn--done:active {
+      background: #4B0EC1;
+    }
     .hw-mobile__btn--done.is-disabled {
       opacity: 0.4;
       pointer-events: none;
     }
 
-    /* ===== 右侧画布区域 ===== */
+    /* ===== 右侧画布区域（Figma #95:921: 301x812） ===== */
     .hw-mobile__canvas-area {
-      flex: 1;
+      flex: 1 1 auto;
       position: relative;
       overflow: hidden;
+      min-width: 0;
       min-height: 0;
       background: #FFFFFF;
     }
     .hw-mobile__canvas-area canvas {
       display: block;
       position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       cursor: crosshair;
       touch-action: none;
     }
@@ -225,7 +277,8 @@
     /* ===== 引导文案 ===== */
     .hw-mobile__guide {
       position: absolute;
-      top: 50%; left: 50%;
+      top: 50%;
+      left: 50%;
       transform: translate(-50%, -50%);
       pointer-events: none;
       font-family: "PingFang SC", sans-serif;
@@ -237,24 +290,33 @@
       white-space: nowrap;
       z-index: 1;
     }
-    .hw-mobile__guide.is-hidden { display: none; }
+    .hw-mobile__guide.is-hidden {
+      display: none;
+    }
 
     /* ===== 切换画笔面板（右侧滑出） ===== */
     .hw-mobile__panel-overlay {
-      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
       background: rgba(38, 38, 38, 0.6);
       z-index: 100;
       display: flex;
       justify-content: flex-end;
-      opacity: 0; visibility: hidden;
+      opacity: 0;
+      visibility: hidden;
       transition: opacity 0.25s ease, visibility 0.25s ease;
     }
     .hw-mobile__panel-overlay.is-open {
-      opacity: 1; visibility: visible;
+      opacity: 1;
+      visibility: visible;
     }
 
     .hw-mobile__panel {
-      width: 375px; max-width: 85vw;
+      width: 375px;
+      max-width: 85vw;
       height: 100%;
       background: #FFFFFF;
       border-radius: 4px 0 0 4px;
@@ -284,10 +346,14 @@
       color: #221D39;
     }
     .hw-mobile__panel-close {
-      width: 16px; height: 16px;
-      display: flex; align-items: center; justify-content: center;
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
-      border: none; background: none;
+      border: none;
+      background: none;
       padding: 0;
     }
 
@@ -301,11 +367,16 @@
       min-height: 0;
     }
 
-    .hw-mobile__panel-section { display: flex; flex-direction: column; gap: 16px; }
+    .hw-mobile__panel-section {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
     .hw-mobile__panel-label {
       font-family: "PingFang SC", sans-serif;
       font-weight: 400;
-      font-size: 16px; line-height: 22px;
+      font-size: 16px;
+      line-height: 22px;
       color: #262626;
     }
     .hw-mobile__panel-swatches {
@@ -317,7 +388,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 30.67px; height: 32px;
+      width: 30.67px;
+      height: 32px;
       border-radius: 5px;
       background: transparent;
       border: none;
@@ -336,26 +408,29 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 100%; height: 40px;
+      width: 100%;
+      height: 40px;
       padding: 8px 16px;
       border-radius: 2px;
       background: #5F11F1;
       color: #FFFFFF;
       font-family: "PingFang SC", sans-serif;
       font-weight: 400;
-      font-size: 16px; line-height: 22px;
+      font-size: 16px;
+      line-height: 22px;
       border: none;
       cursor: pointer;
     }
-    .hw-mobile__panel-btn:active { background: #4B0EC1; }
+    .hw-mobile__panel-btn:active {
+      background: #4B0EC1;
+    }
   </style>
 </head>
 <body>
-  <!-- Firebase SDK (用于跨设备实时数据同步) -->
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
   <script>
-    // Firebase 配置（与PC端保持一致）
     var firebaseConfig = {
       apiKey: "AIzaSyBh6XqV6vXqXqXqXqXqXqXqXqXqXqXqXq",
       authDomain: "signature-sync-test.firebaseapp.com",
@@ -367,121 +442,108 @@
     firebase.initializeApp(firebaseConfig);
     var db = firebase.database();
     
-    // 从URL获取会话ID
     function getSessionId() {
-      var params = new URLSearchParams(window.location.search);
-      return params.get('sid') || '';
+      return new URLSearchParams(window.location.search).get('sid') || '';
     }
     
-    // 向PC端通知已连接
     function notifyConnected() {
       var sid = getSessionId();
       if (!sid) return;
       db.ref('signatures/' + sid).update({
         status: 'connected',
         connectedAt: firebase.database.ServerValue.TIMESTAMP
-      }).catch(function(err) {
-        console.error('连接通知失败:', err);
-      });
+      }).catch(function(err) { console.error(err); });
     }
     
-    // 将签名数据推送到PC端（等比缩放后）
     function pushSignatureToPC(canvasElement, fieldSize) {
       var sid = getSessionId();
-      if (!sid || !canvasElement) return Promise.reject('缺少会话ID或画布');
+      if (!sid || !canvasElement) return Promise.reject('缺少参数');
       
       return new Promise(function(resolve, reject) {
-        var originalDataUrl = canvasElement.toDataURL('image/png');
-        
+        var dataUrl = canvasElement.toDataURL('image/png');
         var img = new Image();
         img.onload = function() {
-          var targetW = fieldSize.width;
-          var targetH = fieldSize.height;
-          var srcW = img.width;
-          var srcH = img.height;
-          
-          var scale = Math.min(targetW / srcW, targetH / srcH);
-          var finalW = Math.round(srcW * scale);
-          var finalH = Math.round(srcH * scale);
-          
-          var resizeCanvas = document.createElement('canvas');
-          resizeCanvas.width = finalW;
-          resizeCanvas.height = finalH;
-          var rCtx = resizeCanvas.getContext('2d');
-          rCtx.fillStyle = '#FFFFFF';
-          rCtx.fillRect(0, 0, finalW, finalH);
-          rCtx.drawImage(img, 0, 0, finalW, finalH);
-          
-          var resizedDataUrl = resizeCanvas.toDataURL('image/png');
-          
+          var scale = Math.min(fieldSize.width / img.width, fieldSize.height / img.height);
+          var w = Math.round(img.width * scale);
+          var h = Math.round(img.height * scale);
+          var c = document.createElement('canvas');
+          c.width = w; c.height = h;
+          var ctx = c.getContext('2d');
+          ctx.fillStyle = '#FFF'; ctx.fillRect(0, 0, w, h);
+          ctx.drawImage(img, 0, 0, w, h);
           db.ref('signatures/' + sid).update({
             status: 'completed',
-            imageData: resizedDataUrl,
+            imageData: c.toDataURL(),
             timestamp: firebase.database.ServerValue.TIMESTAMP,
             deviceType: 'mobile'
-          }).then(function() {
-            resolve(resizedDataUrl);
-          }).catch(reject);
+          }).then(function() { resolve(c.toDataURL()); }).catch(reject);
         };
         img.onerror = reject;
-        img.src = originalDataUrl;
+        img.src = dataUrl;
       });
     }
   </script>
 
-  <!-- 左侧工具栏(72px) + 右侧画布 布局 -->
+  <!-- 主容器: 左侧72px工具栏 + 右侧自适应画布 -->
   <div class="hw-mobile" id="hwMobile">
-    <!-- 左侧工具栏 -->
+    <!-- 左侧工具栏 (Figma #95:877) -->
     <div class="hw-mobile__sidebar">
-      <!-- 顶部：返回按钮 -->
+      <!-- 返回按钮区域 (Figma #95:878) -->
       <div class="hw-mobile__back-section">
         <button class="hw-mobile__back" id="hwBtnBack">
+          <!-- 返回图标 24x12 (Figma #95:879, component 1:11896) -->
           <span class="hw-mobile__back-icon">
-            <svg viewBox="0 0 12 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M9.99994 19.4375L8.95447 20.5L1.28086 12.7014C0.897919 12.3122 0.89792 11.6878 1.28086 11.2986L8.95447 3.5L9.99994 4.5625L2.68167 12L9.99994 19.4375Z" fill="#262626"/>
+            <svg viewBox="0 0 24 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19.9999 4.5625L18.9545 3.5L11.2809 11.2986C10.8979 11.6878 10.8979 12.3122 11.2809 12.7014L18.9545 20.5L19.9999 19.4375L12.6817 12L19.9999 4.5625Z" fill="#262626"/>
             </svg>
           </span>
+          <!-- "返回"文字 (Figma #95:880: PingFang SC 14px, #262626) -->
           <span class="hw-mobile__back-label">返回</span>
         </button>
       </div>
 
-      <!-- 中间：工具按钮区 -->
+      <!-- 中间工具区 (Figma #95:881) -->
       <div class="hw-mobile__tools-section">
-        <!-- 颜色 + 画笔 行 -->
+        <!-- 工具行: 颜色 + 画笔 (Figma #95:882: row, pad 16, gap 24) -->
         <div class="hw-mobile__tool-row">
-          <!-- 颜色按钮（黑色圆点） -->
+          <!-- 颜色按钮 (Figma #95:884: 32x32, bg #FFF, radius 5.33px) -->
           <button class="hw-mobile__tool-btn" id="hwBtnColor" data-action="color">
+            <!-- 黑色圆点 (Figma #95:895: 18.67x18.67, #000000) -->
             <span class="hw-mobile__color-dot"></span>
           </button>
-          <!-- 画笔按钮（曲线笔触） -->
+          <!-- 画笔按钮 (Figma #95:897: 32x32, bg #FFF, radius 5.33px) -->
           <button class="hw-mobile__tool-btn" id="hwBtnPen" data-action="pen">
             <span class="hw-mobile__tool-icon">
-              <svg viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M6.735 17.583C10.476 12.03 16.622 8.127 18.57 9.94C21.36 12.535 9.575 20.866 12.072 22.5C13.907 23.7 21.877 14.573 23.458 16.665C24.68 18.285 19.197 21.766 21.057 23.136C22.324 24.07 24.155 22.201 25.265 20.974" stroke="#262626" stroke-width="1.6" stroke-linecap="round"/>
+              <!-- 画笔SVG (Figma #95:908: 13.9x18.53, stroke #262626, width 1.6) -->
+              <svg viewBox="0 0 14 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6.74 17.58C10.48 12.03 16.62 8.13 18.57 9.94C21.36 12.54 9.57 20.87 12.07 22.50C13.91 23.70 21.88 14.57 23.46 16.66C24.68 18.28 19.20 21.77 21.06 23.14C22.32 24.07 24.16 22.20 25.27 20.97" stroke="#262626" stroke-width="1.6" stroke-linecap="round"/>
               </svg>
             </span>
           </button>
         </div>
 
-        <!-- 撤销按钮（单独一行） -->
-        <button class="hw-mobile__tool-btn--single" id="hwBtnUndo" data-action="undo">
+        <!-- 撤销按钮 (单独一行, 同规格: 32x32, 白色bg) -->
+        <button class="hw-mobile__undo-btn" id="hwBtnUndo" data-action="undo">
           <span class="hw-mobile__tool-icon">
             <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M8.7915 5.955C10.48 5.955 11.8495 7.3025 11.8495 8.965C11.8495 10.575 10.5645 11.89 8.949 11.97L8.7915 11.974H5.097C4.886 11.974 4.715 11.801 4.715 11.598C4.715 11.395 4.886 11.222 5.097 11.222H8.7915C10.058 11.222 11.085 10.2115 11.085 8.965C11.085 7.7185 10.058 6.708 8.7915 6.708H5.097C4.886 6.708 4.715 6.535 4.715 6.332C4.715 6.129 4.886 5.956 5.097 5.956L8.7915 5.955ZM3.9615 6.567C3.812 6.42 3.812 6.182 3.9615 6.035C4.111 5.888 4.3525 5.888 4.5025 6.035L6.4835 7.986C6.633 8.133 6.633 8.371 6.4835 8.518C6.334 8.665 6.0925 8.665 5.943 8.518L3.9615 6.567Z" fill="#262626"/>
-              <path d="M4.5025 6.5675C4.3525 6.7145 4.111 6.714 3.9615 6.567C3.812 6.42 3.812 6.182 3.9615 6.035L5.943 4.0845C6.0925 3.9375 6.334 3.9375 6.4835 4.0845C6.633 4.2315 6.633 4.4695 6.4835 4.6165L4.5025 6.5675Z" fill="#262626"/>
+              <path d="M8.79 5.96C10.48 5.96 11.85 7.30 11.85 8.97C11.85 10.57 10.56 11.89 8.95 11.97L8.79 11.97H5.10C4.89 11.97 4.72 11.80 4.72 11.60C4.72 11.40 4.89 11.22 5.10 11.22H8.79C10.06 11.22 11.09 10.21 11.09 8.97C11.09 7.72 10.06 6.71 8.79 6.71H5.10C4.89 6.71 4.72 6.54 4.72 6.33C4.72 6.13 4.89 5.96 5.10 5.96H8.79Z" fill="#262626"/>
+              <path d="M3.96 6.57C3.81 6.42 3.81 6.18 3.96 6.04C4.11 5.89 4.35 5.89 4.50 6.04L6.48 7.99C6.63 8.13 6.63 8.37 6.48 8.52C6.34 8.66 6.09 8.66 5.94 8.52L3.96 6.57Z" fill="#262626"/>
+              <path d="M4.50 6.57C4.35 6.71 4.11 6.71 3.96 6.57C3.81 6.42 3.81 6.18 3.96 6.04L5.94 4.08C6.09 3.94 6.33 3.94 6.48 4.08C6.63 4.23 6.63 4.47 6.48 4.62L4.50 6.57Z" fill="#262626"/>
             </svg>
           </span>
         </button>
       </div>
 
-      <!-- 底部：操作按钮 -->
+      <!-- 底部操作按钮 (Figma #95:914: width 40px, column, gap 16px) -->
       <div class="hw-mobile__actions">
+        <!-- 重写按钮 (Figma #95:915/#95:916: 40x120, pad 10px, border #EAEBF0) -->
         <button class="hw-mobile__btn hw-mobile__btn--redo" id="hwBtnRedo">重写</button>
+        <!-- 完成按钮 (Figma #95:918/#95:919: bg #5F11F1, opacity 0.4 disabled) -->
         <button class="hw-mobile__btn hw-mobile__btn--done is-disabled" id="hwBtnDone">完成</button>
       </div>
     </div>
 
-    <!-- 右侧画布区域 -->
+    <!-- 右侧画布区域 (Figma #95:921: 自适应) -->
     <div class="hw-mobile__canvas-area" id="hwCanvasArea">
       <canvas id="hwCanvas"></canvas>
       <div class="hw-mobile__guide" id="hwGuide"></div>
@@ -494,59 +556,33 @@
           <span class="hw-mobile__panel-title">切换画笔</span>
           <button class="hw-mobile__panel-close" id="hwPanelClose">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M12.0092 2.93015C12.3021 2.63729 12.7769 2.63726 13.0698 2.93015C13.3381 3.19852 13.3606 3.6196 13.1372 3.91354L13.0698 3.99069L9.06 7.99948L13.0698 12.0092C13.3626 12.3021 13.3626 12.7769 13.0698 13.0698C12.8014 13.3381 12.3803 13.3606 12.0864 13.1372L12.0092 13.0698L7.99945 9.06003L3.99067 13.0698C3.69778 13.3626 3.223 13.3626 2.93012 13.0698C2.66175 12.8014 2.63932 12.3803 2.86274 12.0864L2.93012 12.0092L6.93891 7.99948L2.93012 3.99069C2.63723 3.6978 2.63723 3.22304 2.93012 2.93015C3.1985 2.66177 3.61956 2.63931 3.91352 2.86276L3.99067 2.93015L7.99945 6.93893L12.0092 2.93015Z" fill="#BDBDBD"/>
+              <path d="M12.01 2.93C12.30 2.64 12.78 2.64 13.07 2.93C13.34 3.20 13.36 3.62 13.14 3.91L13.07 3.99L9.06 8.00L13.07 12.01C13.36 12.30 13.36 12.78 13.07 13.07C12.80 13.34 12.38 13.36 12.09 13.14L12.01 13.07L8.00 9.06L3.99 13.07C3.70 13.36 3.22 13.36 2.93 13.07C2.66 12.80 2.64 12.38 2.86 12.09L2.93 12.01L6.94 8.00L2.93 3.99C2.64 3.70 2.64 3.22 2.93 2.93C3.20 2.66 3.62 2.64 3.91 2.86L3.99 2.93L8.00 6.94L12.01 2.93Z" fill="#BDBDBD"/>
             </svg>
           </button>
         </div>
         <div class="hw-mobile__panel-body">
-          <!-- 颜色区域 -->
           <div class="hw-mobile__panel-section">
             <span class="hw-mobile__panel-label">颜色</span>
             <div class="hw-mobile__panel-swatches" id="hwPanelColors">
-              <button class="hw-mobile__panel-swatch hw-mobile__panel-swatch--active" data-color="#000000">
-                <span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#000000;"></span>
-              </button>
-              <button class="hw-mobile__panel-swatch" data-color="#2C60F2">
-                <span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#2C60F2;"></span>
-              </button>
-              <button class="hw-mobile__panel-swatch" data-color="#EA2C2C">
-                <span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#EA2C2C;"></span>
-              </button>
-              <button class="hw-mobile__panel-swatch" data-color="#29C645">
-                <span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#29C645;"></span>
-              </button>
-              <button class="hw-mobile__panel-swatch" data-color="#E9B20B">
-                <span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#E9B20B;"></span>
-              </button>
-              <button class="hw-mobile__panel-swatch" data-color="#E90E9A">
-                <span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#E90E9A;"></span>
-              </button>
+              <button class="hw-mobile__panel-swatch hw-mobile__panel-swatch--active" data-color="#000000"><span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#000000;"></span></button>
+              <button class="hw-mobile__panel-swatch" data-color="#2C60F2"><span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#2C60F2;"></span></button>
+              <button class="hw-mobile__panel-swatch" data-color="#EA2C2C"><span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#EA2C2C;"></span></button>
+              <button class="hw-mobile__panel-swatch" data-color="#29C645"><span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#29C645;"></span></button>
+              <button class="hw-mobile__panel-swatch" data-color="#E9B20B"><span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#E9B20B;"></span></button>
+              <button class="hw-mobile__panel-swatch" data-color="#E90E9A"><span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#E90E9A;"></span></button>
             </div>
           </div>
-          <!-- 粗细区域 -->
           <div class="hw-mobile__panel-section">
             <span class="hw-mobile__panel-label">粗细</span>
             <div class="hw-mobile__panel-swatches" id="hwPanelSizes">
               <button class="hw-mobile__panel-swatch" data-size="2">
-                <span class="hw-mobile__tool-icon">
-                  <svg width="24" height="20" viewBox="-2 -2 24 20" fill="none">
-                    <path d="M0.4 8.49C4.14 2.94 10.29 -0.96 12.23 0.85C15.02 3.44 3.24 11.77 5.74 13.41C7.57 14.61 15.54 5.48 17.12 7.57C18.34 9.19 12.86 12.68 14.72 14.05C15.99 14.98 17.82 13.11 18.93 11.88" stroke="#262626" stroke-width="0.8" stroke-linecap="round"/>
-                  </svg>
-                </span>
+                <span class="hw-mobile__tool-icon"><svg viewBox="-2 -2 24 20" fill="none"><path d="M0.4 8.49C4.14 2.94 10.29 -0.96 12.23 0.85C15.02 3.44 3.24 11.77 5.74 13.41C7.57 14.61 15.54 5.48 17.12 7.57C18.34 9.19 12.86 12.68 14.72 14.05C15.99 14.98 17.82 13.11 18.93 11.88" stroke="#262626" stroke-width="0.8" stroke-linecap="round"/></svg></span>
               </button>
               <button class="hw-mobile__panel-swatch hw-mobile__panel-swatch--active" data-size="4">
-                <span class="hw-mobile__tool-icon">
-                  <svg width="24" height="20" viewBox="-2 -2 24 20" fill="none">
-                    <path d="M0.4 8.49C4.14 2.94 10.29 -0.96 12.23 0.85C15.02 3.44 3.24 11.77 5.74 13.41C7.57 14.61 15.54 5.48 17.12 7.57C18.34 9.19 12.86 12.68 14.72 14.05C15.99 14.98 17.82 13.11 18.93 11.88" stroke="#262626" stroke-width="1.65" stroke-linecap="round"/>
-                  </svg>
-                </span>
+                <span class="hw-mobile__tool-icon"><svg viewBox="-2 -2 24 20" fill="none"><path d="M0.4 8.49C4.14 2.94 10.29 -0.96 12.23 0.85C15.02 3.44 3.24 11.77 5.74 13.41C7.57 14.61 15.54 5.48 17.12 7.57C18.34 9.19 12.86 12.68 14.72 14.05C15.99 14.98 17.82 13.11 18.93 11.88" stroke="#262626" stroke-width="1.65" stroke-linecap="round"/></svg></span>
               </button>
               <button class="hw-mobile__panel-swatch" data-size="6">
-                <span class="hw-mobile__tool-icon">
-                  <svg width="24" height="20" viewBox="-2 -2 24 20" fill="none">
-                    <path d="M0.4 8.49C4.14 2.94 10.29 -0.96 12.23 0.85C15.02 3.44 3.24 11.77 5.74 13.41C7.57 14.61 15.54 5.48 17.12 7.57C18.34 9.19 12.86 12.68 14.72 14.05C15.99 14.98 17.82 13.11 18.93 11.88" stroke="#262626" stroke-width="2.8" stroke-linecap="round"/>
-                  </svg>
-                </span>
+                <span class="hw-mobile__tool-icon"><svg viewBox="-2 -2 24 20" fill="none"><path d="M0.4 8.49C4.14 2.94 10.29 -0.96 12.23 0.85C15.02 3.44 3.24 11.77 5.74 13.41C7.57 14.61 15.54 5.48 17.12 7.57C18.34 9.19 12.86 12.68 14.72 14.05C15.99 14.98 17.82 13.11 18.93 11.88" stroke="#262626" stroke-width="2.8" stroke-linecap="round"/></svg></span>
               </button>
             </div>
           </div>
@@ -560,31 +596,26 @@
 
   <script>
   (function () {
-    // ===== 横屏旋转模式（强制启用） =====
+    // ===== 横屏旋转 =====
     var isLandscapeMode = false;
     var rotateContainer = null;
 
     function enableLandscapeRotate() {
       if (isLandscapeMode) return;
       isLandscapeMode = true;
-      
       document.body.classList.add('hw-landscape-mode');
       document.documentElement.classList.add('hw-landscape-mode');
-      
       rotateContainer = document.createElement('div');
       rotateContainer.className = 'hw-landscape-rotate';
-      
       var hwMobile = document.getElementById('hwMobile');
-      var vw = window.innerWidth || document.documentElement.clientWidth || 375;
-      var vh = window.innerHeight || document.documentElement.clientHeight || 667;
-      
+      var vw = window.innerWidth || 375;
+      var vh = window.innerHeight || 667;
       document.body.style.width = vw + 'px';
       document.body.style.height = vh + 'px';
       document.documentElement.style.width = vw + 'px';
       document.documentElement.style.height = vh + 'px';
       document.body.style.overflow = 'hidden';
       document.documentElement.style.overflow = 'hidden';
-      
       document.body.appendChild(rotateContainer);
       rotateContainer.appendChild(hwMobile);
       void rotateContainer.offsetHeight;
@@ -593,16 +624,13 @@
     function disableLandscapeRotate() {
       if (!isLandscapeMode) return;
       isLandscapeMode = false;
-      
       document.body.classList.remove('hw-landscape-mode');
       document.documentElement.classList.remove('hw-landscape-mode');
-      
       var hwMobile = document.getElementById('hwMobile');
       if (rotateContainer && hwMobile) {
         document.body.appendChild(hwMobile);
         rotateContainer.remove();
         rotateContainer = null;
-        
         document.body.style.width = '';
         document.body.style.height = '';
         document.documentElement.style.width = '';
@@ -610,7 +638,7 @@
       }
     }
 
-    // ===== DOM 引用 =====
+    // ===== DOM =====
     var canvas = document.getElementById('hwCanvas');
     var ctx = canvas.getContext('2d');
     var canvasArea = document.getElementById('hwCanvasArea');
@@ -638,7 +666,7 @@
     var lastX, lastY;
     var dpr = window.devicePixelRatio || 1;
 
-    // ===== 初始化画布 =====
+    // ===== 画布 =====
     function resizeCanvas() {
       dpr = window.devicePixelRatio || 1;
       var w = canvasArea.clientWidth;
@@ -649,14 +677,10 @@
       canvas.style.height = h + 'px';
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.scale(dpr, dpr);
-      if (undoStack.length > 0) {
-        restoreState(undoStack[undoStack.length - 1]);
-      }
+      if (undoStack.length > 0) restoreState(undoStack[undoStack.length - 1]);
     }
 
-    function saveState() {
-      undoStack.push(canvas.toDataURL());
-    }
+    function saveState() { undoStack.push(canvas.toDataURL()); }
 
     function restoreState(dataUrl) {
       var img = new Image();
@@ -679,24 +703,14 @@
     }
 
     function updateDoneButton() {
-      if (hasDrawn) {
-        btnDone.classList.remove('is-disabled');
-      } else {
-        btnDone.classList.add('is-disabled');
-      }
+      btnDone.classList.toggle('is-disabled', !hasDrawn);
     }
 
-    // ===== 绘制事件 =====
+    // ===== 绘制 =====
     function getPos(e) {
       var rect = canvas.getBoundingClientRect();
-      var clientX, clientY;
-      if (e.touches) {
-        clientX = e.touches[0].clientX;
-        clientY = e.touches[0].clientY;
-      } else {
-        clientX = e.clientX;
-        clientY = e.clientY;
-      }
+      var clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      var clientY = e.touches ? e.touches[0].clientY : e.clientY;
       return { x: clientX - rect.left, y: clientY - rect.top };
     }
 
@@ -704,8 +718,7 @@
       e.preventDefault();
       isDrawing = true;
       var pos = getPos(e);
-      lastX = pos.x;
-      lastY = pos.y;
+      lastX = pos.x; lastY = pos.y;
       ctx.beginPath();
       ctx.arc(lastX, lastY, currentSize / 2, 0, Math.PI * 2);
       ctx.fillStyle = currentColor;
@@ -724,8 +737,7 @@
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.stroke();
-      lastX = pos.x;
-      lastY = pos.y;
+      lastX = pos.x; lastY = pos.y;
     }
 
     function endDraw() {
@@ -746,161 +758,98 @@
     canvas.addEventListener('mouseup', endDraw);
     canvas.addEventListener('mouseleave', endDraw);
 
-    // ===== 撤销功能 =====
+    // ===== 撤销 =====
     function undo() {
       if (undoStack.length > 1) {
         undoStack.pop();
         restoreState(undoStack[undoStack.length - 1]);
-        if (undoStack.length <= 1) {
-          hasDrawn = false;
-          updateDoneButton();
-        }
+        if (undoStack.length <= 1) { hasDrawn = false; updateDoneButton(); }
       } else if (undoStack.length === 1) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        undoStack = [];
-        hasDrawn = false;
-        updateDoneButton();
+        undoStack = []; hasDrawn = false; updateDoneButton();
       }
     }
 
-    // ===== 同步面板选中状态 =====
+    // ===== 面板同步 =====
     function syncPanelSelections() {
-      panelColors.querySelectorAll('.hw-mobile__panel-swatch').forEach(function (btn) {
-        btn.classList.remove('hw-mobile__panel-swatch--active');
-        if (btn.getAttribute('data-color') === currentColor) {
-          btn.classList.add('hw-mobile__panel-swatch--active');
-        }
+      panelColors.querySelectorAll('.hw-mobile__panel-swatch').forEach(function (b) {
+        b.classList.toggle('hw-mobile__panel-swatch--active', b.getAttribute('data-color') === currentColor);
       });
-      panelSizes.querySelectorAll('.hw-mobile__panel-swatch').forEach(function (btn) {
-        btn.classList.remove('hw-mobile__panel-swatch--active');
-        if (parseInt(btn.getAttribute('data-size')) === currentSize) {
-          btn.classList.add('hw-mobile__panel-swatch--active');
-        }
+      panelSizes.querySelectorAll('.hw-mobile__panel-swatch').forEach(function (b) {
+        b.classList.toggle('hw-mobile__panel-swatch--active', parseInt(b.getAttribute('data-size')) === currentSize);
       });
     }
 
-    // ===== 更新颜色圆点显示 =====
     function updateColorDot() {
       var dot = document.querySelector('.hw-mobile__color-dot');
       if (dot) dot.style.background = currentColor;
     }
 
-    // ===== 工具栏事件 =====
-    btnColor.addEventListener('click', function () {
-      syncPanelSelections();
-      panelOverlay.classList.add('is-open');
-    });
+    // ===== 事件绑定 =====
+    btnColor.addEventListener('click', function () { syncPanelSelections(); panelOverlay.classList.add('is-open'); });
+    btnPen.addEventListener('click', function () { syncPanelSelections(); panelOverlay.classList.add('is-open'); });
+    btnUndo.addEventListener('click', undo);
 
-    btnPen.addEventListener('click', function () {
-      syncPanelSelections();
-      panelOverlay.classList.add('is-open');
-    });
-
-    btnUndo.addEventListener('click', function () {
-      undo();
-    });
-
-    // ===== 面板事件 =====
     panelColors.addEventListener('click', function (e) {
-      var btn = e.target.closest('.hw-mobile__panel-swatch');
-      if (!btn) return;
-      panelColors.querySelectorAll('.hw-mobile__panel-swatch').forEach(function (b) {
-        b.classList.remove('hw-mobile__panel-swatch--active');
-      });
-      btn.classList.add('hw-mobile__panel-swatch--active');
+      var b = e.target.closest('.hw-mobile__panel-swatch');
+      if (!b) return;
+      panelColors.querySelectorAll('.hw-mobile__panel-swatch').forEach(function(x){ x.classList.remove('hw-mobile__panel-swatch--active'); });
+      b.classList.add('hw-mobile__panel-swatch--active');
     });
 
     panelSizes.addEventListener('click', function (e) {
-      var btn = e.target.closest('.hw-mobile__panel-swatch');
-      if (!btn) return;
-      panelSizes.querySelectorAll('.hw-mobile__panel-swatch').forEach(function (b) {
-        b.classList.remove('hw-mobile__panel-swatch--active');
-      });
-      btn.classList.add('hw-mobile__panel-swatch--active');
+      var b = e.target.closest('.hw-mobile__panel-swatch');
+      if (!b) return;
+      panelSizes.querySelectorAll('.hw-mobile__panel-swatch').forEach(function(x){ x.classList.remove('hw-mobile__panel-swatch--active'); });
+      b.classList.add('hw-mobile__panel-swatch--active');
     });
 
     panelSwitch.addEventListener('click', function () {
-      var activeColor = panelColors.querySelector('.hw-mobile__panel-swatch--active');
-      if (activeColor) currentColor = activeColor.getAttribute('data-color');
-      var activeSize = panelSizes.querySelector('.hw-mobile__panel-swatch--active');
-      if (activeSize) currentSize = parseInt(activeSize.getAttribute('data-size'));
+      var ac = panelColors.querySelector('.hw-mobile__panel-swatch--active');
+      if (ac) currentColor = ac.getAttribute('data-color');
+      var as = panelSizes.querySelector('.hw-mobile__panel-swatch--active');
+      if (as) currentSize = parseInt(as.getAttribute('data-size'));
       panelOverlay.classList.remove('is-open');
       updateColorDot();
     });
 
-    panelClose.addEventListener('click', function () {
-      panelOverlay.classList.remove('is-open');
-    });
+    panelClose.addEventListener('click', function () { panelOverlay.classList.remove('is-open'); });
+    panelOverlay.addEventListener('click', function (e) { if (e.target === panelOverlay) panelOverlay.classList.remove('is-open'); });
 
-    panelOverlay.addEventListener('click', function (e) {
-      if (e.target === panelOverlay) {
-        panelOverlay.classList.remove('is-open');
-      }
-    });
+    btnBack.addEventListener('click', function () { if (window._hwMobileOnClose) window._hwMobileOnClose(); });
 
-    // ===== 操作按钮事件 =====
-    btnBack.addEventListener('click', function () {
-      if (window._hwMobileOnClose) window._hwMobileOnClose();
-    });
-
-    btnRedo.addEventListener('click', function () {
-      resetCanvas();
-      if (guideEl) guideEl.classList.remove('is-hidden');
-    });
+    btnRedo.addEventListener('click', function () { resetCanvas(); if (guideEl) guideEl.classList.remove('is-hidden'); });
 
     btnDone.addEventListener('click', function () {
       if (this.classList.contains('is-disabled')) return;
-      
       var btn = this;
       btn.textContent = '提交中...';
-      
-      var params = new URLSearchParams(window.location.search);
-      var fieldW = parseInt(params.get('fw')) || 200;
-      var fieldH = parseInt(params.get('fh')) || 100;
-      
-      pushSignatureToPC(canvas, { width: fieldW, height: fieldH })
-        .then(function() {
-          btn.textContent = '已完成';
-          btn.style.background = '#29C645';
-          
-          setTimeout(function() {
-            if (window._hwMobileOnClose) window._hwMobileOnClose();
-          }, 800);
+      var p = new URLSearchParams(window.location.search);
+      var fw = parseInt(p.get('fw')) || 200;
+      var fh = parseInt(p.get('fh')) || 100;
+      pushSignatureToPC(canvas, { width: fw, height: fh })
+        .then(function () {
+          btn.textContent = '已完成'; btn.style.background = '#29C645';
+          setTimeout(function () { if (window._hwMobileOnClose) window._hwMobileOnClose(); }, 800);
         })
-        .catch(function(err) {
-          console.error('签名推送失败:', err);
-          btn.textContent = '完成';
-          alert('提交失败，请重试');
-        });
+        .catch(function (err) { console.error(err); btn.textContent = '完成'; alert('提交失败，请重试'); });
     });
 
-    // ===== 关闭/打开 =====
+    // ===== 打开/关闭 =====
     function open() {
       setTimeout(notifyConnected, 500);
-      
-      // 从URL参数获取引导文案
       var urlParams = new URLSearchParams(window.location.search);
       var guideText = urlParams.get('guide') || '';
-      
       if (!guideText && window._currentHandwriteField) {
         guideText = window._currentHandwriteField.getAttribute('data-field-handwrite-guide') || '';
       }
-      
       if (guideEl) {
         guideEl.textContent = guideText;
-        if (guideText) guideEl.classList.remove('is-hidden');
-        else guideEl.classList.add('is-hidden');
+        guideEl.classList.toggle('is-hidden', !guideText);
       }
-      
-      // 强制启用横屏旋转
       enableLandscapeRotate();
-      
       document.body.style.overflow = 'hidden';
-      
-      setTimeout(function () {
-        resizeCanvas();
-        resetCanvas();
-      }, 150);
+      setTimeout(function () { resizeCanvas(); resetCanvas(); }, 150);
     }
 
     function close() {
@@ -908,60 +857,38 @@
       document.body.style.overflow = '';
     }
 
-    // ===== 将绘制内容保存到控件（嵌入式模式） =====
     function applyHandwriteToField() {
       var field = window._currentHandwriteField;
       if (!field) return;
-
       if (guideEl) guideEl.classList.add('is-hidden');
-
       var dataUrl = canvas.toDataURL('image/png');
       var body = field.querySelector('.ns-envelope-editor-field__body');
       if (!body) return;
-
       var img = body.querySelector('.ns-envelope-editor-field__handwrite-image');
-      if (!img) {
-        img = document.createElement('img');
-        img.className = 'ns-envelope-editor-field__handwrite-image';
-        img.alt = '';
-        img.draggable = false;
-        body.appendChild(img);
-      }
-      img.src = dataUrl;
-      img.classList.add('is-visible');
-
-      var guide = body.querySelector('[data-handwrite-guide]');
-      if (guide) guide.classList.add('is-hidden');
-      var icon = body.querySelector('.ns-envelope-editor-field__icon');
-      if (icon) icon.style.display = 'none';
-      var label = body.querySelector('.ns-envelope-editor-field__label');
-      if (label) label.style.display = 'none';
-
+      if (!img) { img = document.createElement('img'); img.className = 'ns-envelope-editor-field__handwrite-image'; img.alt = ''; img.draggable = false; body.appendChild(img); }
+      img.src = dataUrl; img.classList.add('is-visible');
+      var g = body.querySelector('[data-handwrite-guide]'); if (g) g.classList.add('is-hidden');
+      var i = body.querySelector('.ns-envelope-editor-field__icon'); if (i) i.style.display = 'none';
+      var l = body.querySelector('.ns-envelope-editor-field__label'); if (l) l.style.display = 'none';
       close();
     }
 
-    // ===== PC端引导文案同步 =====
     function syncGuideText(text) {
+      if (!guideEl) return;
       guideEl.textContent = text || '';
-      if (text) guideEl.classList.remove('is-hidden');
-      else guideEl.classList.add('is-hidden');
+      guideEl.classList.toggle('is-hidden', !text);
     }
 
-    // ===== 暴露全局接口 =====
     window._hwMobileOpen = open;
     window._hwMobileClose = close;
     window._hwMobileSyncGuide = syncGuideText;
 
-    // 初始状态
     resizeCanvas();
     saveState();
 
     window.addEventListener('resize', resizeCanvas);
-    window.addEventListener('orientationchange', function () {
-      setTimeout(resizeCanvas, 100);
-    });
+    window.addEventListener('orientationchange', function () { setTimeout(resizeCanvas, 100); });
 
-    // 页面加载时自动开启（扫码独立打开时）
     open();
   })();
   </script>

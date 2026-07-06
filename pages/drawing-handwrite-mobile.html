@@ -16,245 +16,16 @@
       background: #FFFFFF;
     }
 
-    /* ===== 横屏旋转模式（CSS模拟） ===== */
-    .hw-landscape-rotate {
-      position: fixed !important;
-      top: 0 !important;
-      left: 0 !important;
-      width: 100vh !important;
-      height: 100vw !important;
-      transform-origin: 0 0;
-      transform: rotate(90deg) translateY(-100%);
-      -webkit-transform-origin: 0 0;
-      -webkit-transform: rotate(90deg) translateY(-100%);
-      overflow: hidden;
-      z-index: 99999;
-      background: #FFFFFF;
-    }
-
-    body.hw-landscape-mode,
-    html.hw-landscape-mode {
-      overflow: hidden !important;
-      width: 100vw !important;
-      height: 100vh !important;
-    }
-
-    /* ===== 全屏容器 - 左侧工具栏 + 右侧画布 ===== */
+    /* ===== 全屏容器 - 上方画布 + 底部工具栏 ===== */
     .hw-mobile {
       display: flex;
-      flex-direction: row;
+      flex-direction: column;
       width: 100%; height: 100%;
       background: #FFFFFF;
       overflow: hidden;
     }
 
-    /* ===== 左侧工具栏（Figma #95:877 规范） ===== */
-    /* 尺寸: 72x813, 布局: column, padding 16px 0, space-between */
-    .hw-mobile__sidebar {
-      flex-shrink: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px 0;
-      background: #FFFFFF;
-      border-right: 1px solid #EAEBF0;
-      width: 72px;
-      height: 100%;
-      min-height: 0;
-      z-index: 10;
-    }
-
-    /* ===== 返回按钮区域（Figma #95:878） ===== */
-    /* 尺寸: 24px宽, 布局: column, flex-end对齐, gap 4px */
-    .hw-mobile__back-section {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 4px;
-      width: 24px;
-      flex-shrink: 0;
-    }
-    .hw-mobile__back {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 4px;
-      cursor: pointer;
-      border: none;
-      background: none;
-      padding: 0;
-      font-family: inherit;
-      width: 100%;
-    }
-    /* 返回图标: 24x12 (Figma #95:879) */
-    .hw-mobile__back-icon {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 24px;
-      height: 12px;
-    }
-    .hw-mobile__back-icon svg {
-      display: block;
-      width: 100%;
-      height: 100%;
-    }
-    /* "返回"文字: PingFang SC 14px, #262626, height 28 */
-    .hw-mobile__back-label {
-      font-size: 14px;
-      line-height: 28px;
-      color: #262626;
-      text-align: center;
-      white-space: nowrap;
-      font-weight: 400;
-    }
-
-    /* ===== 中间工具按钮区域（Figma #95:881） ===== */
-    /* 布局: column, stretch, center, gap 16px */
-    .hw-mobile__tools-section {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      flex: 1 1 auto;
-      width: 100%;
-      min-height: 0;
-      overflow: visible;
-    }
-
-    /* 工具行（Figma #95:882: row, padding 16px, gap 24px） */
-    .hw-mobile__tool-row {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      justify-content: center;
-      gap: 24px;
-      padding: 16px;
-      width: 100%;
-    }
-
-    /* 单个工具按钮（Figma EL-0d9e1a84: 32x32, bg #FFF, radius 5.33px） */
-    .hw-mobile__tool-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 32px;
-      height: 32px;
-      border-radius: 5.33px;
-      background: #FFFFFF;
-      border: none;
-      cursor: pointer;
-      padding: 0;
-      flex-shrink: 0;
-    }
-    .hw-mobile__tool-btn:active {
-      background: #F5F5F5;
-    }
-
-    /* 工具图标容器（Figma EL-62138513: 21.33x21.33） */
-    .hw-mobile__tool-icon {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 21.33px;
-      height: 21.33px;
-      overflow: visible;
-    }
-    .hw-mobile__tool-icon svg {
-      display: block;
-      width: 100%;
-      height: 100%;
-    }
-
-    /* 颜色圆点（Figma EL-fcdbb995: 18.67x18.67, #000000, 圆形） */
-    .hw-mobile__color-dot {
-      width: 18.67px;
-      height: 18.67px;
-      border-radius: 50%;
-      background: #000000;
-      display: block;
-      flex-shrink: 0;
-    }
-
-    /* 撤销按钮（与工具按钮同规格: 32x32, 白色bg, 5px圆角） */
-    .hw-mobile__undo-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 32px;
-      height: 32px;
-      border-radius: 5px;
-      background: #FFFFFF;
-      border: none;
-      cursor: pointer;
-      padding: 0;
-      flex-shrink: 0;
-    }
-    .hw-mobile__undo-btn:active {
-      background: #F5F5F5;
-    }
-
-    /* ===== 底部操作按钮区域（Figma #95:914） ===== */
-    /* 宽度: 40px, 布局: column, stretch, gap 16px */
-    .hw-mobile__actions {
-      display: flex;
-      flex-direction: column;
-      align-items: stretch;
-      gap: 16px;
-      flex-shrink: 0;
-      width: 40px;
-    }
-
-    /* 操作按钮（Figma: 40x120旋转后, writing-mode竖排） */
-    .hw-mobile__btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 120px;
-      height: 40px;
-      border-radius: 2px;
-      font-family: "PingFang SC", sans-serif;
-      font-style: normal;
-      font-weight: 400;
-      font-size: 16px;
-      line-height: 22px;
-      border: none;
-      cursor: pointer;
-      flex-shrink: 0;
-      writing-mode: vertical-lr;
-      text-orientation: mixed;
-      letter-spacing: 0;
-    }
-
-    /* 重写按钮（Figma #95:916: bg #FFF, border 1px #EAEBF0, radius 2px, pad 10px） */
-    .hw-mobile__btn--redo {
-      background: #FFFFFF;
-      border: 1px solid #EAEBF0;
-      color: #262626;
-    }
-    .hw-mobile__btn--redo:active {
-      background: #F5F5F5;
-    }
-
-    /* 完成按钮（Figma #95:919: bg #5F11F1, radius 2px 0 0 2px, pad 8px 16px, opacity 0.4 disabled） */
-    .hw-mobile__btn--done {
-      background: #5F11F1;
-      color: #FFFFFF;
-      border-radius: 2px;
-    }
-    .hw-mobile__btn--done:active {
-      background: #4B0EC1;
-    }
-    .hw-mobile__btn--done.is-disabled {
-      opacity: 0.4;
-      pointer-events: none;
-    }
-
-    /* ===== 右侧画布区域（Figma #95:921: 301x812） ===== */
+    /* ===== 画布区域 ===== */
     .hw-mobile__canvas-area {
       flex: 1 1 auto;
       position: relative;
@@ -266,10 +37,8 @@
     .hw-mobile__canvas-area canvas {
       display: block;
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
       cursor: crosshair;
       touch-action: none;
     }
@@ -277,153 +46,252 @@
     /* ===== 引导文案 ===== */
     .hw-mobile__guide {
       position: absolute;
-      top: 50%;
-      left: 50%;
+      top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       pointer-events: none;
       font-family: "PingFang SC", sans-serif;
       font-weight: 400;
-      font-size: 36px;
-      line-height: 1.4;
+      font-size: 36px; line-height: 1.4;
       color: rgba(38, 38, 38, 0.15);
       text-align: center;
-      white-space: nowrap;
-      z-index: 1;
+      white-space: nowrap; z-index: 1;
     }
-    .hw-mobile__guide.is-hidden {
-      display: none;
-    }
+    .hw-mobile__guide.is-hidden { display: none; }
 
-    /* ===== 切换画笔面板（右侧滑出） ===== */
-    .hw-mobile__panel-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(38, 38, 38, 0.6);
-      z-index: 100;
+    /* ===== 底部工具栏 (固定高度) ===== */
+    /* Figma参考: 高度适配内容, row布局 */
+    .hw-mobile__toolbar {
+      flex-shrink: 0;
       display: flex;
-      justify-content: flex-end;
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.25s ease, visibility 0.25s ease;
-    }
-    .hw-mobile__panel-overlay.is-open {
-      opacity: 1;
-      visibility: visible;
-    }
-
-    .hw-mobile__panel {
-      width: 375px;
-      max-width: 85vw;
-      height: 100%;
-      background: #FFFFFF;
-      border-radius: 4px 0 0 4px;
-      box-shadow: 0 8px 20px 0 rgba(0, 0, 0, 0.1);
-      display: flex;
-      flex-direction: column;
-      transform: translateX(100%);
-      transition: transform 0.3s ease;
-    }
-    .hw-mobile__panel-overlay.is-open .hw-mobile__panel {
-      transform: translateX(0);
-    }
-
-    .hw-mobile__panel-header {
-      display: flex;
+      flex-direction: row;
       align-items: center;
       justify-content: space-between;
-      padding: 16px;
-      border-bottom: 1px solid #EAEBF0;
-      flex-shrink: 0;
+      padding: 12px 16px;
+      padding-bottom: calc(12px + env(safe-area-inset-bottom, 0));
+      background: #FFFFFF;
+      border-top: 1px solid #EAEBF0;
+      gap: 16px;
+      z-index: 10;
     }
-    .hw-mobile__panel-title {
-      font-family: "PingFang SC", sans-serif;
-      font-weight: 600;
-      font-size: 16px;
-      line-height: 24px;
-      color: #221D39;
-    }
-    .hw-mobile__panel-close {
-      width: 16px;
-      height: 16px;
+
+    /* ===== 左侧: 返回按钮 ===== */
+    .hw-mobile__back-btn {
       display: flex;
+      flex-direction: row;
       align-items: center;
-      justify-content: center;
+      gap: 4px;
       cursor: pointer;
       border: none;
       background: none;
-      padding: 0;
+      padding: 8px 4px;
+      font-family: inherit;
+      flex-shrink: 0;
+    }
+    .hw-mobile__back-icon {
+      display: flex; align-items: center; justify-content: center;
+      width: 24px; height: 24px;
+    }
+    .hw-mobile__back-icon svg { display: block; width: 100%; height: 100%; }
+    .hw-mobile__back-label {
+      font-size: 14px; line-height: 20px;
+      color: #262626; white-space: nowrap; font-weight: 400;
     }
 
-    .hw-mobile__panel-body {
-      flex: 1;
-      padding: 0 16px;
+    /* ===== 中间: 工具组 (颜色+画笔+撤销) ===== */
+    .hw-mobile__tools-group {
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
+      align-items: center;
       justify-content: center;
-      gap: 21px;
-      min-height: 0;
+      gap: 20px;
+      flex-shrink: 0;
     }
 
-    .hw-mobile__panel-section {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-    .hw-mobile__panel-label {
-      font-family: "PingFang SC", sans-serif;
-      font-weight: 400;
-      font-size: 16px;
-      line-height: 22px;
-      color: #262626;
-    }
-    .hw-mobile__panel-swatches {
-      display: flex;
-      align-items: center;
-      gap: 21px;
-    }
-    .hw-mobile__panel-swatch {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 30.67px;
-      height: 32px;
-      border-radius: 5px;
+    /* 工具按钮 (32x32, 白色bg, 圆角) */
+    .hw-mobile__tool-btn {
+      display: flex; align-items: center; justify-content: center;
+      width: 40px; height: 40px;
+      border-radius: 8px;
       background: transparent;
       border: none;
       cursor: pointer;
       padding: 0;
+      flex-shrink: 0;
+      transition: background 0.15s ease;
     }
-    .hw-mobile__panel-swatch--active {
-      background: #EAEBF0;
+    .hw-mobile__tool-btn:active { background: #F5F5F5; }
+
+    /* 颜色圆点 (18.67px, Figma EL-fcdbb995) */
+    .hw-mobile__color-dot {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: #000000;
+      display: block; flex-shrink: 0;
+    }
+
+    /* 工具图标 */
+    .hw-mobile__tool-icon {
+      display: flex; align-items: center; justify-content: center;
+      width: 22px; height: 22px;
+    }
+    .hw-mobile__tool-icon svg { display: block; width: 100%; height: 100%; }
+
+    /* ===== 右侧: 操作按钮组 ===== */
+    .hw-mobile__actions-group {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    /* 操作按钮 */
+    .hw-mobile__action-btn {
+      display: flex; align-items: center; justify-content: center;
+      padding: 9px 20px;
+      border-radius: 6px;
+      font-family: "PingFang SC", sans-serif;
+      font-style: normal; font-weight: 400;
+      font-size: 15px; line-height: 21px;
+      border: none; cursor: pointer;
+      white-space: nowrap;
+      min-width: 64px;
+      flex-shrink: 0;
+      transition: all 0.15s ease;
+    }
+
+    /* 重写按钮: 白底+边框 */
+    .hw-mobile__action-btn--redo {
+      background: #FFFFFF;
+      border: 1px solid #D0D0D0;
+      color: #262626;
+    }
+    .hw-mobile__action-btn--redo:active { background: #F5F5F5; }
+
+    /* 完成按钮: 紫色 #5F11F1 */
+    .hw-mobile__action-btn--done {
+      background: #5F11F1;
+      color: #FFFFFF;
+      padding: 9px 24px;
+    }
+    .hw-mobile__action-btn--done:active { background: #4B0EC1; }
+    .hw-mobile__action-btn--done.is-disabled {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    /* ===== 切换画笔面板 (底部滑出) ===== */
+    .hw-mobile__panel-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(38, 38, 38, 0.6);
+      z-index: 100;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.25s ease, visibility 0.25s ease;
+    }
+    .hw-mobile__panel-overlay.is-open { opacity: 1; visibility: visible; }
+
+    .hw-mobile__panel {
+      width: 100%;
+      max-height: 60vh;
+      background: #FFFFFF;
+      border-radius: 16px 16px 0 0;
+      box-shadow: 0 -4px 20px 0 rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+    }
+    .hw-mobile__panel-overlay.is-open .hw-mobile__panel { transform: translateY(0); }
+
+    .hw-mobile__panel-handle {
+      width: 36px; height: 4px;
+      border-radius: 2px;
+      background: #E0E0E0;
+      margin: 12px auto 8px;
+      flex-shrink: 0;
+    }
+
+    .hw-mobile__panel-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 20px 16px;
+      flex-shrink: 0;
+    }
+    .hw-mobile__panel-title {
+      font-weight: 600; font-size: 17px; line-height: 24px;
+      color: #262626;
+    }
+    .hw-mobile__panel-close {
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      border: none; background: #F5F5F5;
+      border-radius: 14px; padding: 0;
+    }
+
+    .hw-mobile__panel-body {
+      flex: 1;
+      padding: 0 20px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .hw-mobile__panel-section {
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .hw-mobile__panel-label {
+      font-weight: 500; font-size: 14px; line-height: 20px;
+      color: #666666;
+    }
+    .hw-mobile__panel-swatches {
+      display: flex; align-items: center; gap: 16px;
+      flex-wrap: wrap;
+    }
+    .hw-mobile__panel-swatch {
+      display: flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: transparent;
+      border: 2px solid transparent;
+      cursor: pointer; padding: 0;
+      transition: border-color 0.15s ease, transform 0.15s ease;
+    }
+    .hw-mobile__panel-swatch--active { border-color: #5F11F1; transform: scale(1.1); }
+
+    /* 粗细选项 */
+    .hw-mobile__panel-swatch--size {
+      width: 44px; height: 44px;
+      border-radius: 8px;
+      background: #F5F5F5;
+      border: 2px solid transparent;
+    }
+    .hw-mobile__panel-swatch--size.hw-mobile__panel-swatch--active {
+      background: #EFECFF; border-color: #5F11F1;
     }
 
     .hw-mobile__panel-footer {
-      padding: 16px;
+      padding: 12px 20px;
+      padding-bottom: calc(12px + env(safe-area-inset-bottom, 0));
       flex-shrink: 0;
+      border-top: 1px solid #F0F0F0;
     }
     .hw-mobile__panel-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      height: 40px;
-      padding: 8px 16px;
-      border-radius: 2px;
-      background: #5F11F1;
-      color: #FFFFFF;
+      display: flex; align-items: center; justify-content: center;
+      width: 100%; height: 48px;
+      border-radius: 12px;
+      background: #5F11F1; color: #FFFFFF;
       font-family: "PingFang SC", sans-serif;
-      font-weight: 400;
-      font-size: 16px;
-      line-height: 22px;
-      border: none;
-      cursor: pointer;
+      font-weight: 600; font-size: 16px; line-height: 22px;
+      border: none; cursor: pointer;
     }
-    .hw-mobile__panel-btn:active {
-      background: #4B0EC1;
-    }
+    .hw-mobile__panel-btn:active { background: #4B0EC1; }
   </style>
 </head>
 <body>
@@ -442,153 +310,127 @@
     firebase.initializeApp(firebaseConfig);
     var db = firebase.database();
     
-    function getSessionId() {
-      return new URLSearchParams(window.location.search).get('sid') || '';
-    }
+    function getSessionId() { return new URLSearchParams(window.location.search).get('sid') || ''; }
     
     function notifyConnected() {
       var sid = getSessionId();
       if (!sid) return;
-      db.ref('signatures/' + sid).update({
-        status: 'connected',
-        connectedAt: firebase.database.ServerValue.TIMESTAMP
-      }).catch(function(err) { console.error(err); });
+      db.ref('signatures/' + sid).update({ status: 'connected', connectedAt: firebase.database.ServerValue.TIMESTAMP }).catch(function(err) {});
     }
     
     function pushSignatureToPC(canvasElement, fieldSize) {
       var sid = getSessionId();
       if (!sid || !canvasElement) return Promise.reject('缺少参数');
-      
       return new Promise(function(resolve, reject) {
         var dataUrl = canvasElement.toDataURL('image/png');
         var img = new Image();
         img.onload = function() {
           var scale = Math.min(fieldSize.width / img.width, fieldSize.height / img.height);
-          var w = Math.round(img.width * scale);
-          var h = Math.round(img.height * scale);
-          var c = document.createElement('canvas');
-          c.width = w; c.height = h;
-          var ctx = c.getContext('2d');
-          ctx.fillStyle = '#FFF'; ctx.fillRect(0, 0, w, h);
-          ctx.drawImage(img, 0, 0, w, h);
+          var w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+          var c = document.createElement('canvas'); c.width = w; c.height = h;
+          var ctx = c.getContext('2d'); ctx.fillStyle = '#FFF'; ctx.fillRect(0, 0, w, h); ctx.drawImage(img, 0, 0, w, h);
           db.ref('signatures/' + sid).update({
-            status: 'completed',
-            imageData: c.toDataURL(),
-            timestamp: firebase.database.ServerValue.TIMESTAMP,
-            deviceType: 'mobile'
+            status: 'completed', imageData: c.toDataURL(),
+            timestamp: firebase.database.ServerValue.TIMESTAMP, deviceType: 'mobile'
           }).then(function() { resolve(c.toDataURL()); }).catch(reject);
         };
-        img.onerror = reject;
-        img.src = dataUrl;
+        img.onerror = reject; img.src = dataUrl;
       });
     }
   </script>
 
-  <!-- 主容器: 左侧72px工具栏 + 右侧自适应画布 -->
+  <!-- 主容器: 上方画布 + 底部工具栏 -->
   <div class="hw-mobile" id="hwMobile">
-    <!-- 左侧工具栏 (Figma #95:877) -->
-    <div class="hw-mobile__sidebar">
-      <!-- 返回按钮区域 (Figma #95:878) -->
-      <div class="hw-mobile__back-section">
-        <button class="hw-mobile__back" id="hwBtnBack">
-          <!-- 返回图标 24x12 (Figma #95:879, component 1:11896) -->
-          <span class="hw-mobile__back-icon">
-            <svg viewBox="0 0 24 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M19.9999 4.5625L18.9545 3.5L11.2809 11.2986C10.8979 11.6878 10.8979 12.3122 11.2809 12.7014L18.9545 20.5L19.9999 19.4375L12.6817 12L19.9999 4.5625Z" fill="#262626"/>
-            </svg>
-          </span>
-          <!-- "返回"文字 (Figma #95:880: PingFang SC 14px, #262626) -->
-          <span class="hw-mobile__back-label">返回</span>
-        </button>
-      </div>
-
-      <!-- 中间工具区 (Figma #95:881) -->
-      <div class="hw-mobile__tools-section">
-        <!-- 工具行: 颜色 + 画笔 (Figma #95:882: row, pad 16, gap 24) -->
-        <div class="hw-mobile__tool-row">
-          <!-- 颜色按钮 (Figma #95:884: 32x32, bg #FFF, radius 5.33px) -->
-          <button class="hw-mobile__tool-btn" id="hwBtnColor" data-action="color">
-            <!-- 黑色圆点 (Figma #95:895: 18.67x18.67, #000000) -->
-            <span class="hw-mobile__color-dot"></span>
-          </button>
-          <!-- 画笔按钮 (Figma #95:897: 32x32, bg #FFF, radius 5.33px) -->
-          <button class="hw-mobile__tool-btn" id="hwBtnPen" data-action="pen">
-            <span class="hw-mobile__tool-icon">
-              <!-- 画笔SVG (Figma #95:908: 13.9x18.53, stroke #262626, width 1.6) -->
-              <svg viewBox="0 0 14 19" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M6.74 17.58C10.48 12.03 16.62 8.13 18.57 9.94C21.36 12.54 9.57 20.87 12.07 22.50C13.91 23.70 21.88 14.57 23.46 16.66C24.68 18.28 19.20 21.77 21.06 23.14C22.32 24.07 24.16 22.20 25.27 20.97" stroke="#262626" stroke-width="1.6" stroke-linecap="round"/>
-              </svg>
-            </span>
-          </button>
-        </div>
-
-        <!-- 撤销按钮 (单独一行, 同规格: 32x32, 白色bg) -->
-        <button class="hw-mobile__undo-btn" id="hwBtnUndo" data-action="undo">
-          <span class="hw-mobile__tool-icon">
-            <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M8.79 5.96C10.48 5.96 11.85 7.30 11.85 8.97C11.85 10.57 10.56 11.89 8.95 11.97L8.79 11.97H5.10C4.89 11.97 4.72 11.80 4.72 11.60C4.72 11.40 4.89 11.22 5.10 11.22H8.79C10.06 11.22 11.09 10.21 11.09 8.97C11.09 7.72 10.06 6.71 8.79 6.71H5.10C4.89 6.71 4.72 6.54 4.72 6.33C4.72 6.13 4.89 5.96 5.10 5.96H8.79Z" fill="#262626"/>
-              <path d="M3.96 6.57C3.81 6.42 3.81 6.18 3.96 6.04C4.11 5.89 4.35 5.89 4.50 6.04L6.48 7.99C6.63 8.13 6.63 8.37 6.48 8.52C6.34 8.66 6.09 8.66 5.94 8.52L3.96 6.57Z" fill="#262626"/>
-              <path d="M4.50 6.57C4.35 6.71 4.11 6.71 3.96 6.57C3.81 6.42 3.81 6.18 3.96 6.04L5.94 4.08C6.09 3.94 6.33 3.94 6.48 4.08C6.63 4.23 6.63 4.47 6.48 4.62L4.50 6.57Z" fill="#262626"/>
-            </svg>
-          </span>
-        </button>
-      </div>
-
-      <!-- 底部操作按钮 (Figma #95:914: width 40px, column, gap 16px) -->
-      <div class="hw-mobile__actions">
-        <!-- 重写按钮 (Figma #95:915/#95:916: 40x120, pad 10px, border #EAEBF0) -->
-        <button class="hw-mobile__btn hw-mobile__btn--redo" id="hwBtnRedo">重写</button>
-        <!-- 完成按钮 (Figma #95:918/#95:919: bg #5F11F1, opacity 0.4 disabled) -->
-        <button class="hw-mobile__btn hw-mobile__btn--done is-disabled" id="hwBtnDone">完成</button>
-      </div>
-    </div>
-
-    <!-- 右侧画布区域 (Figma #95:921: 自适应) -->
+    <!-- 画布区域 -->
     <div class="hw-mobile__canvas-area" id="hwCanvasArea">
       <canvas id="hwCanvas"></canvas>
       <div class="hw-mobile__guide" id="hwGuide"></div>
     </div>
 
-    <!-- 切换画笔面板 -->
+    <!-- 底部工具栏 -->
+    <div class="hw-mobile__toolbar">
+      <!-- 左: 返回 -->
+      <button class="hw-mobile__back-btn" id="hwBtnBack">
+        <span class="hw-mobile__back-icon">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M15 19l-7-7 7-7" stroke="#262626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="hw-mobile__back-label">返回</span>
+      </button>
+
+      <!-- 中: 工具组 -->
+      <div class="hw-mobile__tools-group">
+        <!-- 颜色 -->
+        <button class="hw-mobile__tool-btn" id="hwBtnColor" data-action="color">
+          <span class="hw-mobile__color-dot" id="hwColorDot"></span>
+        </button>
+        <!-- 画笔 -->
+        <button class="hw-mobile__tool-btn" id="hwBtnPen" data-action="pen">
+          <span class="hw-mobile__tool-icon">
+            <svg viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 17L13 7M13 7L8 2L18 12L13 7ZM13 7L18 2L20 4L15 9" stroke="#262626" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M6 20C6 20 2 18 2 14C2 10 6 8 6 8" stroke="#262626" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </span>
+        </button>
+        <!-- 撤销 -->
+        <button class="hw-mobile__tool-btn" id="hwBtnUndo" data-action="undo">
+          <span class="hw-mobile__tool-icon">
+            <svg viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 11C4 7.13401 7.13401 4 11 4C13.5 4 15.5 5.5 16.5 7.5L14 10H20V4L17.5 6.5C16 4 13.5 2 10 2C4.47715 2 0 6.47715 0 12C0 14 0.5 16 1.5 17.5" stroke="#262626" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M4 14V8H10" stroke="#262626" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+        </button>
+      </div>
+
+      <!-- 右: 操作按钮 -->
+      <div class="hw-mobile__actions-group">
+        <button class="hw-mobile__action-btn hw-mobile__action-btn--redo" id="hwBtnRedo">重写</button>
+        <button class="hw-mobile__action-btn hw-mobile__action-btn--done is-disabled" id="hwBtnDone">完成</button>
+      </div>
+    </div>
+
+    <!-- 切换画笔面板 (底部弹出) -->
     <div class="hw-mobile__panel-overlay" id="hwPanelOverlay">
       <div class="hw-mobile__panel" id="hwPanel">
+        <div class="hw-mobile__panel-handle"></div>
         <div class="hw-mobile__panel-header">
           <span class="hw-mobile__panel-title">切换画笔</span>
           <button class="hw-mobile__panel-close" id="hwPanelClose">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M12.01 2.93C12.30 2.64 12.78 2.64 13.07 2.93C13.34 3.20 13.36 3.62 13.14 3.91L13.07 3.99L9.06 8.00L13.07 12.01C13.36 12.30 13.36 12.78 13.07 13.07C12.80 13.34 12.38 13.36 12.09 13.14L12.01 13.07L8.00 9.06L3.99 13.07C3.70 13.36 3.22 13.36 2.93 13.07C2.66 12.80 2.64 12.38 2.86 12.09L2.93 12.01L6.94 8.00L2.93 3.99C2.64 3.70 2.64 3.22 2.93 2.93C3.20 2.66 3.62 2.64 3.91 2.86L3.99 2.93L8.00 6.94L12.01 2.93Z" fill="#BDBDBD"/>
-            </svg>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 1L13 13M13 1L1 13" stroke="#666" stroke-width="1.5" stroke-linecap="round"/></svg>
           </button>
         </div>
         <div class="hw-mobile__panel-body">
           <div class="hw-mobile__panel-section">
             <span class="hw-mobile__panel-label">颜色</span>
             <div class="hw-mobile__panel-swatches" id="hwPanelColors">
-              <button class="hw-mobile__panel-swatch hw-mobile__panel-swatch--active" data-color="#000000"><span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#000000;"></span></button>
-              <button class="hw-mobile__panel-swatch" data-color="#2C60F2"><span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#2C60F2;"></span></button>
-              <button class="hw-mobile__panel-swatch" data-color="#EA2C2C"><span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#EA2C2C;"></span></button>
-              <button class="hw-mobile__panel-swatch" data-color="#29C645"><span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#29C645;"></span></button>
-              <button class="hw-mobile__panel-swatch" data-color="#E9B20B"><span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#E9B20B;"></span></button>
-              <button class="hw-mobile__panel-swatch" data-color="#E90E9A"><span style="display:block;width:18.67px;height:18.67px;border-radius:50%;background:#E90E9A;"></span></button>
+              <button class="hw-mobile__panel-swatch hw-mobile__panel-swatch--active" data-color="#000000" style="background:#000000;"></button>
+              <button class="hw-mobile__panel-swatch" data-color="#2C60F2" style="background:#2C60F2;"></button>
+              <button class="hw-mobile__panel-swatch" data-color="#EA2C2C" style="background:#EA2C2C;"></button>
+              <button class="hw-mobile__panel-swatch" data-color="#29C645" style="background:#29C645;"></button>
+              <button class="hw-mobile__panel-swatch" data-color="#E9B20B" style="background:#E9B20B;"></button>
+              <button class="hw-mobile__panel-swatch" data-color="#E90E9A" style="background:#E90E9A;"></button>
             </div>
           </div>
           <div class="hw-mobile__panel-section">
             <span class="hw-mobile__panel-label">粗细</span>
             <div class="hw-mobile__panel-swatches" id="hwPanelSizes">
-              <button class="hw-mobile__panel-swatch" data-size="2">
-                <span class="hw-mobile__tool-icon"><svg viewBox="-2 -2 24 20" fill="none"><path d="M0.4 8.49C4.14 2.94 10.29 -0.96 12.23 0.85C15.02 3.44 3.24 11.77 5.74 13.41C7.57 14.61 15.54 5.48 17.12 7.57C18.34 9.19 12.86 12.68 14.72 14.05C15.99 14.98 17.82 13.11 18.93 11.88" stroke="#262626" stroke-width="0.8" stroke-linecap="round"/></svg></span>
+              <button class="hw-mobile__panel-swatch hw-mobile__panel-swatch--size" data-size="2">
+                <svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="3" fill="#262626"/></svg>
               </button>
-              <button class="hw-mobile__panel-swatch hw-mobile__panel-swatch--active" data-size="4">
-                <span class="hw-mobile__tool-icon"><svg viewBox="-2 -2 24 20" fill="none"><path d="M0.4 8.49C4.14 2.94 10.29 -0.96 12.23 0.85C15.02 3.44 3.24 11.77 5.74 13.41C7.57 14.61 15.54 5.48 17.12 7.57C18.34 9.19 12.86 12.68 14.72 14.05C15.99 14.98 17.82 13.11 18.93 11.88" stroke="#262626" stroke-width="1.65" stroke-linecap="round"/></svg></span>
+              <button class="hw-mobile__panel-swatch hw-mobile__panel-swatch--size hw-mobile__panel-swatch--active" data-size="4">
+                <svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="5.5" fill="#262626"/></svg>
               </button>
-              <button class="hw-mobile__panel-swatch" data-size="6">
-                <span class="hw-mobile__tool-icon"><svg viewBox="-2 -2 24 20" fill="none"><path d="M0.4 8.49C4.14 2.94 10.29 -0.96 12.23 0.85C15.02 3.44 3.24 11.77 5.74 13.41C7.57 14.61 15.54 5.48 17.12 7.57C18.34 9.19 12.86 12.68 14.72 14.05C15.99 14.98 17.82 13.11 18.93 11.88" stroke="#262626" stroke-width="2.8" stroke-linecap="round"/></svg></span>
+              <button class="hw-mobile__panel-swatch hw-mobile__panel-swatch--size" data-size="6">
+                <svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="8" fill="#262626"/></svg>
               </button>
             </div>
           </div>
         </div>
         <div class="hw-mobile__panel-footer">
-          <button class="hw-mobile__panel-btn" id="hwPanelSwitch">切换</button>
+          <button class="hw-mobile__panel-btn" id="hwPanelSwitch">确定</button>
         </div>
       </div>
     </div>
@@ -596,48 +438,6 @@
 
   <script>
   (function () {
-    // ===== 横屏旋转 =====
-    var isLandscapeMode = false;
-    var rotateContainer = null;
-
-    function enableLandscapeRotate() {
-      if (isLandscapeMode) return;
-      isLandscapeMode = true;
-      document.body.classList.add('hw-landscape-mode');
-      document.documentElement.classList.add('hw-landscape-mode');
-      rotateContainer = document.createElement('div');
-      rotateContainer.className = 'hw-landscape-rotate';
-      var hwMobile = document.getElementById('hwMobile');
-      var vw = window.innerWidth || 375;
-      var vh = window.innerHeight || 667;
-      document.body.style.width = vw + 'px';
-      document.body.style.height = vh + 'px';
-      document.documentElement.style.width = vw + 'px';
-      document.documentElement.style.height = vh + 'px';
-      document.body.style.overflow = 'hidden';
-      document.documentElement.style.overflow = 'hidden';
-      document.body.appendChild(rotateContainer);
-      rotateContainer.appendChild(hwMobile);
-      void rotateContainer.offsetHeight;
-    }
-
-    function disableLandscapeRotate() {
-      if (!isLandscapeMode) return;
-      isLandscapeMode = false;
-      document.body.classList.remove('hw-landscape-mode');
-      document.documentElement.classList.remove('hw-landscape-mode');
-      var hwMobile = document.getElementById('hwMobile');
-      if (rotateContainer && hwMobile) {
-        document.body.appendChild(hwMobile);
-        rotateContainer.remove();
-        rotateContainer = null;
-        document.body.style.width = '';
-        document.body.style.height = '';
-        document.documentElement.style.width = '';
-        document.documentElement.style.height = '';
-      }
-    }
-
     // ===== DOM =====
     var canvas = document.getElementById('hwCanvas');
     var ctx = canvas.getContext('2d');
@@ -688,7 +488,6 @@
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.scale(dpr, dpr);
       };
       img.src = dataUrl;
@@ -696,15 +495,10 @@
 
     function resetCanvas() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      undoStack = [];
-      hasDrawn = false;
-      updateDoneButton();
-      saveState();
+      undoStack = []; hasDrawn = false; updateDoneButton(); saveState();
     }
 
-    function updateDoneButton() {
-      btnDone.classList.toggle('is-disabled', !hasDrawn);
-    }
+    function updateDoneButton() { btnDone.classList.toggle('is-disabled', !hasDrawn); }
 
     // ===== 绘制 =====
     function getPos(e) {
@@ -715,37 +509,23 @@
     }
 
     function startDraw(e) {
-      e.preventDefault();
-      isDrawing = true;
-      var pos = getPos(e);
-      lastX = pos.x; lastY = pos.y;
-      ctx.beginPath();
-      ctx.arc(lastX, lastY, currentSize / 2, 0, Math.PI * 2);
-      ctx.fillStyle = currentColor;
-      ctx.fill();
+      e.preventDefault(); isDrawing = true;
+      var pos = getPos(e); lastX = pos.x; lastY = pos.y;
+      ctx.beginPath(); ctx.arc(lastX, lastY, currentSize / 2, 0, Math.PI * 2);
+      ctx.fillStyle = currentColor; ctx.fill();
     }
 
     function moveDraw(e) {
-      if (!isDrawing) return;
-      e.preventDefault();
+      if (!isDrawing) return; e.preventDefault();
       var pos = getPos(e);
-      ctx.beginPath();
-      ctx.moveTo(lastX, lastY);
-      ctx.lineTo(pos.x, pos.y);
-      ctx.strokeStyle = currentColor;
-      ctx.lineWidth = currentSize;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(pos.x, pos.y);
+      ctx.strokeStyle = currentColor; ctx.lineWidth = currentSize;
+      ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke();
       lastX = pos.x; lastY = pos.y;
     }
 
     function endDraw() {
-      if (!isDrawing) return;
-      isDrawing = false;
-      hasDrawn = true;
-      updateDoneButton();
-      saveState();
+      if (!isDrawing) return; isDrawing = false; hasDrawn = true; updateDoneButton(); saveState();
       if (guideEl) guideEl.classList.add('is-hidden');
     }
 
@@ -761,8 +541,7 @@
     // ===== 撤销 =====
     function undo() {
       if (undoStack.length > 1) {
-        undoStack.pop();
-        restoreState(undoStack[undoStack.length - 1]);
+        undoStack.pop(); restoreState(undoStack[undoStack.length - 1]);
         if (undoStack.length <= 1) { hasDrawn = false; updateDoneButton(); }
       } else if (undoStack.length === 1) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -772,16 +551,16 @@
 
     // ===== 面板同步 =====
     function syncPanelSelections() {
-      panelColors.querySelectorAll('.hw-mobile__panel-swatch').forEach(function (b) {
+      panelColors.querySelectorAll('.hw-mobile__panel-swatch').forEach(function(b) {
         b.classList.toggle('hw-mobile__panel-swatch--active', b.getAttribute('data-color') === currentColor);
       });
-      panelSizes.querySelectorAll('.hw-mobile__panel-swatch').forEach(function (b) {
+      panelSizes.querySelectorAll('.hw-mobile__panel-swatch').forEach(function(b) {
         b.classList.toggle('hw-mobile__panel-swatch--active', parseInt(b.getAttribute('data-size')) === currentSize);
       });
     }
 
     function updateColorDot() {
-      var dot = document.querySelector('.hw-mobile__color-dot');
+      var dot = document.getElementById('hwColorDot');
       if (dot) dot.style.background = currentColor;
     }
 
@@ -792,14 +571,14 @@
 
     panelColors.addEventListener('click', function (e) {
       var b = e.target.closest('.hw-mobile__panel-swatch');
-      if (!b) return;
+      if (!b || !b.getAttribute('data-color')) return;
       panelColors.querySelectorAll('.hw-mobile__panel-swatch').forEach(function(x){ x.classList.remove('hw-mobile__panel-swatch--active'); });
       b.classList.add('hw-mobile__panel-swatch--active');
     });
 
     panelSizes.addEventListener('click', function (e) {
       var b = e.target.closest('.hw-mobile__panel-swatch');
-      if (!b) return;
+      if (!b || b.getAttribute('data-size') === null) return;
       panelSizes.querySelectorAll('.hw-mobile__panel-swatch').forEach(function(x){ x.classList.remove('hw-mobile__panel-swatch--active'); });
       b.classList.add('hw-mobile__panel-swatch--active');
     });
@@ -809,24 +588,20 @@
       if (ac) currentColor = ac.getAttribute('data-color');
       var as = panelSizes.querySelector('.hw-mobile__panel-swatch--active');
       if (as) currentSize = parseInt(as.getAttribute('data-size'));
-      panelOverlay.classList.remove('is-open');
-      updateColorDot();
+      panelOverlay.classList.remove('is-open'); updateColorDot();
     });
 
     panelClose.addEventListener('click', function () { panelOverlay.classList.remove('is-open'); });
     panelOverlay.addEventListener('click', function (e) { if (e.target === panelOverlay) panelOverlay.classList.remove('is-open'); });
 
     btnBack.addEventListener('click', function () { if (window._hwMobileOnClose) window._hwMobileOnClose(); });
-
     btnRedo.addEventListener('click', function () { resetCanvas(); if (guideEl) guideEl.classList.remove('is-hidden'); });
 
     btnDone.addEventListener('click', function () {
       if (this.classList.contains('is-disabled')) return;
-      var btn = this;
-      btn.textContent = '提交中...';
+      var btn = this; btn.textContent = '提交中...';
       var p = new URLSearchParams(window.location.search);
-      var fw = parseInt(p.get('fw')) || 200;
-      var fh = parseInt(p.get('fh')) || 100;
+      var fw = parseInt(p.get('fw')) || 200, fh = parseInt(p.get('fh')) || 100;
       pushSignatureToPC(canvas, { width: fw, height: fh })
         .then(function () {
           btn.textContent = '已完成'; btn.style.background = '#29C645';
@@ -843,27 +618,18 @@
       if (!guideText && window._currentHandwriteField) {
         guideText = window._currentHandwriteField.getAttribute('data-field-handwrite-guide') || '';
       }
-      if (guideEl) {
-        guideEl.textContent = guideText;
-        guideEl.classList.toggle('is-hidden', !guideText);
-      }
-      enableLandscapeRotate();
+      if (guideEl) { guideEl.textContent = guideText; guideEl.classList.toggle('is-hidden', !guideText); }
       document.body.style.overflow = 'hidden';
       setTimeout(function () { resizeCanvas(); resetCanvas(); }, 150);
     }
 
-    function close() {
-      disableLandscapeRotate();
-      document.body.style.overflow = '';
-    }
+    function close() { document.body.style.overflow = ''; }
 
     function applyHandwriteToField() {
-      var field = window._currentHandwriteField;
-      if (!field) return;
+      var field = window._currentHandwriteField; if (!field) return;
       if (guideEl) guideEl.classList.add('is-hidden');
       var dataUrl = canvas.toDataURL('image/png');
-      var body = field.querySelector('.ns-envelope-editor-field__body');
-      if (!body) return;
+      var body = field.querySelector('.ns-envelope-editor-field__body'); if (!body) return;
       var img = body.querySelector('.ns-envelope-editor-field__handwrite-image');
       if (!img) { img = document.createElement('img'); img.className = 'ns-envelope-editor-field__handwrite-image'; img.alt = ''; img.draggable = false; body.appendChild(img); }
       img.src = dataUrl; img.classList.add('is-visible');
@@ -873,18 +639,13 @@
       close();
     }
 
-    function syncGuideText(text) {
-      if (!guideEl) return;
-      guideEl.textContent = text || '';
-      guideEl.classList.toggle('is-hidden', !text);
-    }
+    function syncGuideText(text) { if (!guideEl) return; guideEl.textContent = text || ''; guideEl.classList.toggle('is-hidden', !text); }
 
     window._hwMobileOpen = open;
     window._hwMobileClose = close;
     window._hwMobileSyncGuide = syncGuideText;
 
-    resizeCanvas();
-    saveState();
+    resizeCanvas(); saveState();
 
     window.addEventListener('resize', resizeCanvas);
     window.addEventListener('orientationchange', function () { setTimeout(resizeCanvas, 100); });

@@ -103,44 +103,36 @@
       flex-shrink: 0;
     }
 
-    /* 工具按钮容器 (Figma EL-0d9e1a84: 32x32, bg #FFF, radius 5.33px) */
+    /* 工具按钮容器 - 纯图标无背景 (匹配设计稿截图) */
     .hw-mobile__tool-btn {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 32px;   /* Figma EL-0d9e1a84: width 32 */
-      height: 32px;  /* Figma EL-0d9e1a84: height 32 */
-      border-radius: 5.33px;  /* Figma EL-0d9e1a84: borderRadius 5.33px */
-      background: #FFFFFF;     /* Figma fill_658ab2fa: #FFFFFF */
+      width: 44px;
+      height: 44px;
+      background: transparent;
       border: none;
       cursor: pointer;
-      padding: 0;
+      padding: 8px;
       flex-shrink: 0;
-      transition: background 0.15s ease;
     }
-    .hw-mobile__tool-btn:active { background: #F5F5F5; }
+    .hw-mobile__tool-btn:active { background: rgba(0,0,0,0.04); }
 
-    /* 颜色圆点 (Figma EL-fcdbb995: 18.67x18.67, #000000) */
-    .hw-mobile__color-dot {
-      width: 18.67px;
-      height: 18.67px;
-      border-radius: 50%;
-      background: #000000;
-      display: block; flex-shrink: 0;
-    }
-
-    /* 工具图标容器 (Figma EL-62138513: 21.33x21.33) */
+    /* 工具图标容器 */
     .hw-mobile__tool-icon {
       display: flex; align-items: center; justify-content: center;
-      width: 21.33px;   /* Figma EL-62138513 */
-      height: 21.33px; /* Figma EL-62138513 */
-      overflow: visible;
+      width: 24px;
+      height: 24px;
     }
     .hw-mobile__tool-icon svg { display: block; width: 100%; height: 100%; }
 
-    /* 撤销按钮特殊处理: 包含白色背景的SVG (Figma #95:912) */
-    .hw-mobile__undo-btn .hw-mobile__tool-icon svg {
-      width: 32px; height: 32px;
+    /* 颜色圆点 (设计稿: 18px 圆形 #000000) */
+    .hw-mobile__color-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #000000;
+      display: block; flex-shrink: 0;
     }
 
     /* ===== 右侧操作按钮组 ===== */
@@ -359,10 +351,10 @@
     <div class="hw-mobile__toolbar">
       <!-- 左: 返回按钮 -->
       <button class="hw-mobile__back-btn" id="hwBtnBack">
-        <!-- 返回图标 24x12 (Figma #95:879, component 1:11896) -->
-        <span class="hw-mobile__back-icon">
-          <svg viewBox="0 0 24 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path fill-rule="evenodd" clip-rule="evenodd" d="M4.5625 10L3.5 8.95453L11.2986 1.28092C11.6878 0.89798 12.3122 0.897981 12.7014 1.28092L20.5 8.95453L19.4375 10L12 2.68173L4.5625 10Z" fill="#262626"/>
+        <!-- 返回图标 24x24 - 向左箭头 -->
+        <span class="hw-mobile__back-icon" style="width:24px;height:24px;">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M15 19l-7-7 7-7" stroke="#262626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </span>
         <!-- 返回文字 14px (Figma #95:880) -->
@@ -387,15 +379,13 @@
           </span>
         </button>
 
-        <!-- 撤销按钮 (32x32, 含白色bg) - Figma #95:912 -->
+        <!-- 撤销按钮 - 纯图标无背景 -->
         <button class="hw-mobile__tool-btn hw-mobile__undo-btn" id="hwBtnUndo" data-action="undo">
           <span class="hw-mobile__tool-icon">
-            <!-- 撤销SVG (32x32, 内含白色背景rect+路径) - 从Figma导出 -->
-            <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="32" width="32" height="32" rx="5" transform="rotate(90 32 0)" fill="white"/>
-              <path d="M20.0898 17.5834C20.0898 20.9607 17.3949 23.6986 14.0705 23.6986C10.85 23.6986 8.22024 21.1291 8.05911 17.8979L8.05127 17.5834L8.05127 10.1942C8.05127 9.77207 8.38813 9.42983 8.80368 9.42984C9.21922 9.42984 9.55609 9.77207 9.55609 10.1942L9.55609 17.5834C9.55609 20.1164 11.5773 22.1698 14.0705 22.1698C16.5638 22.1698 18.585 20.1164 18.585 17.5834L18.585 10.1942C18.585 9.77207 18.9219 9.42984 19.3374 9.42984C19.7529 9.42984 20.0898 9.77207 20.0898 10.1942L20.0898 17.5834Z" fill="#262626"/>
-              <path d="M18.8659 7.9225C19.1597 7.62398 19.6361 7.62398 19.9299 7.9225C20.2238 8.22101 20.2238 8.705 19.9299 9.00352L16.0284 12.9673C15.7345 13.2658 15.2581 13.2658 14.9643 12.9673C14.6705 12.6688 14.6705 12.1848 14.9643 11.8862L18.8659 7.9225Z" fill="#262626"/>
-              <path d="M18.8652 9.00353C18.5714 8.70501 18.572 8.22101 18.8659 7.9225C19.1597 7.62398 19.6361 7.62398 19.9299 7.9225L23.8309 11.8863C24.1247 12.1848 24.1247 12.6688 23.8309 12.9673C23.5371 13.2658 23.0607 13.2658 22.7668 12.9673L18.8652 9.00353Z" fill="#262626"/>
+            <!-- 撤销SVG - 向左曲线箭头 -->
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 14L4 9l5-5" stroke="#262626" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M20 12a8 8 0 00-15.5-2.5M4 12v-3h3" stroke="#262626" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </span>
         </button>

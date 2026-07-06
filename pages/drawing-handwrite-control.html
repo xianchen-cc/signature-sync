@@ -369,6 +369,76 @@
       cursor: not-allowed;
       pointer-events: none;
     }
+
+    /* ==========================================================================
+       Handwrite Modal — QR Code View (手机手绘)
+       ========================================================================== */
+    .handwrite-modal__draw-view,
+    .handwrite-modal__qrcode-view {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 300px;
+    }
+    
+    .handwrite-modal__qrcode-view {
+      align-items: center;
+      justify-content: center;
+      padding: 32px 24px;
+    }
+
+    .handwrite-modal__qrcode-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .handwrite-modal__qrcode-wrap {
+      width: 200px;
+      height: 200px;
+      padding: 12px;
+      border: 1px solid #EAEBF0;
+      border-radius: 8px;
+      background: #FFFFFF;
+      margin-bottom: 20px;
+    }
+
+    .handwrite-modal__qrcode-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .handwrite-modal__qrcode-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: #262626;
+      margin-bottom: 16px;
+    }
+
+    .hw-qrcode-dot {
+      width: 8px;
+      height: 8px;
+      background: #FF9500;
+      border-radius: 50%;
+      animation: hw-pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes hw-pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .handwrite-modal__qrcode-hint {
+      font-size: 13px;
+      color: #8C8C8C;
+      line-height: 22px;
+      max-width: 280px;
+      margin: 0;
+    }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="./components/i18n.js" defer></script>
@@ -923,13 +993,15 @@
         </button>
       </header>
       <div class="handwrite-modal__body">
-        <div class="handwrite-modal__canvas-wrap">
-          <div class="handwrite-modal__canvas-inner" id="handwriteCanvasInner">
-            <div class="handwrite-modal__guide-text" id="handwriteGuideText"></div>
-            <canvas id="handwriteCanvas"></canvas>
+        <!-- 在此绘制视图（默认显示） -->
+        <div class="handwrite-modal__draw-view" id="hwDrawView">
+          <div class="handwrite-modal__canvas-wrap">
+            <div class="handwrite-modal__canvas-inner" id="handwriteCanvasInner">
+              <div class="handwrite-modal__guide-text" id="handwriteGuideText"></div>
+              <canvas id="handwriteCanvas"></canvas>
+            </div>
           </div>
-        </div>
-        <div class="handwrite-modal__toolbar">
+          <div class="handwrite-modal__toolbar">
           <div class="handwrite-modal__toolbar-inner">
             <div class="handwrite-modal__toolbar-left">
               <div class="handwrite-modal__colors" role="radiogroup" aria-label="画笔颜色">
@@ -966,6 +1038,21 @@
                 <span class="toolbar-action-btn__text">重写</span>
               </button>
             </div>
+          </div>
+        </div>  <!-- end .toolbar -->
+        </div>  <!-- end .hwDrawView -->
+        
+        <!-- 手机手绘二维码视图（默认隐藏） -->
+        <div class="handwrite-modal__qrcode-view" id="hwQRCodeView" style="display: none;">
+          <div class="handwrite-modal__qrcode-container">
+            <div class="handwrite-modal__qrcode-wrap">
+              <canvas id="hwQRCodeCanvas"></canvas>
+            </div>
+            <div class="handwrite-modal__qrcode-status">
+              <span class="hw-qrcode-dot"></span>
+              <span>等待手机连接...</span>
+            </div>
+            <p class="handwrite-modal__qrcode-hint">请使用手机扫描上方二维码，在手机上完成手绘签名</p>
           </div>
         </div>
       </div>
@@ -1140,12 +1227,12 @@
 
     // ===== 手机手绘 Tab 切换 =====
     var tabs = document.querySelectorAll('.handwrite-modal__tab');
-    var phoneTab = document.querySelector('.handwrite-modal__tab[data-tab="phone"]');
-    var drawTab = document.querySelector('.handwrite-modal__tab[data-tab="draw"]');
-    
-    // GitHub Pages 二维码弹窗地址
-    var QR_POPUP_URL = 'https://xianchen-cc.github.io/signature-sync/pages/qrcode-popup.html';
-    var qrPopupWindow = null;
+    var drawView = document.getElementById('hwDrawView');
+    var qrCodeView = document.getElementById('hwQRCodeView');
+    var qrCanvas = document.getElementById('hwQRCodeCanvas');
+
+    // GitHub Pages 移动端签署地址
+    var MOBILE_SIGN_URL = 'https://xianchen-cc.github.io/signature-sync/pages/drawing-handwrite-mobile.html?mode=landscape';
 
     tabs.forEach(function(tab) {
       tab.addEventListener('click', function() {
@@ -1156,68 +1243,84 @@
           tabs.forEach(function(t) { t.classList.remove('handwrite-modal__tab--active'); });
           this.classList.add('handwrite-modal__tab--active');
           
-          // 打开二维码弹窗
-          openQRCodePopup();
+          // 显示二维码视图，隐藏绘制视图
+          drawView.style.display = 'none';
+          qrCodeView.style.display = 'flex';
+          
+          // 生成并显示二维码
+          generateQRCode();
         } else if (tabType === 'draw') {
           // 切换回在此绘制tab
           tabs.forEach(function(t) { t.classList.remove('handwrite-modal__tab--active'); });
           this.classList.add('handwrite-modal__tab--active');
           
-          // 关闭二维码弹窗（如果打开的话）
-          closeQRCodePopup();
+          // 显示绘制视图，隐藏二维码视图
+          drawView.style.display = 'flex';
+          qrCodeView.style.display = 'none';
         }
       });
     });
 
-    function openQRCodePopup() {
-      // 构建二维码URL（可传入当前签署字段信息）
+    // 生成二维码（使用轻量级qrcode库）
+    function generateQRCode() {
+      if (!qrCanvas) return;
+      
+      var ctx = qrCanvas.getContext('2d');
+      var size = 176; // 200px容器 - 24px padding
+      
+      // 构建URL（可传入当前签署字段信息）
       var field = window._currentHandwriteField;
-      var params = new URLSearchParams();
+      var url = MOBILE_SIGN_URL;
       if (field) {
         var guide = field.getAttribute('data-field-handwrite-guide') || '';
-        if (guide) params.set('guide', guide);
+        if (guide) url += '&guide=' + encodeURIComponent(guide);
       }
-      
-      var url = QR_POPUP_URL + (params.toString() ? '?' + params.toString() : '');
-      
-      // 弹出新窗口显示二维码
-      var w = Math.min(450, window.innerWidth - 100);
-      var h = Math.min(620, window.innerHeight - 100);
-      var left = (window.innerWidth - w) / 2 + window.screenX;
-      var top = (window.innerHeight - h) / 2 + window.screenY;
-      
-      qrPopupWindow = window.open(
-        url,
-        'mobileHandwriteQR',
-        'width=' + w + ',height=' + h + ',left=' + left + ',top=' + top +
-        ',scrollbars=no,resizable=no,toolbar=no,menubar=no'
-      );
-      
-      // 监听弹窗关闭
-      if (qrPopupWindow) {
-        var checkClosed = setInterval(function() {
-          try {
-            if (qrPopupWindow.closed) {
-              clearInterval(checkClosed);
-              qrPopupWindow = null;
-              // 可选：切回"在此绘制"tab
-              if (drawTab) {
-                tabs.forEach(function(t) { t.classList.remove('handwrite-modal__tab--active'); });
-                drawTab.classList.add('handwrite-modal__tab--active');
-              }
-            }
-          } catch(e) {
-            clearInterval(checkClosed);
-          }
-        }, 500);
+
+      // 使用 qrcode.js 库生成
+      if (typeof QRCode !== 'undefined') {
+        qrCanvas.width = size;
+        qrCanvas.height = size;
+        new QRCode(ctx, {
+          content: url,
+          width: size,
+          height: size,
+          colorDark: '#000000',
+          colorLight: '#FFFFFF',
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      } else {
+        // 降级：显示占位图
+        qrCanvas.width = size;
+        qrCanvas.height = size;
+        ctx.fillStyle = '#F5F5F5';
+        ctx.fillRect(0, 0, size, size);
+        ctx.fillStyle = '#8C8C8C';
+        ctx.font = '14px -apple-system, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('加载中...', size / 2, size / 2);
+        
+        // 动态加载 qrcode 库后重新生成
+        loadQRCodeLibrary(url);
       }
     }
 
-    function closeQRCodePopup() {
-      if (qrPopupWindow && !qrPopupWindow.closed) {
-        qrPopupWindow.close();
-      }
-      qrPopupWindow = null;
+    function loadQRCodeLibrary(url) {
+      var script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
+      script.onload = function() { generateQRCode(); };
+      script.onerror = function() {
+        // 加载失败时显示提示
+        var ctx = qrCanvas.getContext('2d');
+        ctx.clearRect(0, 0, qrCanvas.width, qrCanvas.height);
+        ctx.fillStyle = '#F5F5F5';
+        ctx.fillRect(0, 0, qrCanvas.width, qrCanvas.height);
+        ctx.fillStyle = '#8C8C8C';
+        ctx.font = '12px -apple-system, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('二维码加载失败\n请刷新页面重试', qrCanvas.width / 2, qrCanvas.height / 2 - 10);
+      };
+      document.head.appendChild(script);
     }
 
     document.addEventListener('keydown', function(e) {

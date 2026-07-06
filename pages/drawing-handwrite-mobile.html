@@ -863,7 +863,7 @@
       <!-- 绘制画布区域 -->
       <div class="hw-portrait__canvas-area">
         <canvas id="hwPortraitCanvas"></canvas>
-        <div class="hw-portrait__guide"></div>
+        <div class="hw-portrait__guide" id="hwPortraitGuide"></div>
       </div>
 
       <!-- 底部工具栏 -->
@@ -1442,6 +1442,9 @@
       portraitHasDrawn = true;
       updatePortraitDoneButton();
       savePortraitState();
+      // 隐藏竖版引导文案
+      var portraitGuideEl = document.getElementById('hwPortraitGuide');
+      if (portraitGuideEl) portraitGuideEl.classList.add('is-hidden');
     }
 
     // 绑定竖版canvas事件
@@ -1648,14 +1651,33 @@
     function open() {
       // 通知PC端移动端已连接
       setTimeout(notifyConnected, 500);
-      var field = window._currentHandwriteField;
-      if (field) {
-        var guide = field.getAttribute('data-field-handwrite-guide') || '';
-        guideEl.textContent = guide;
-        if (guide) {
+      
+      // 从URL参数或field属性获取引导文案
+      var urlParams = new URLSearchParams(window.location.search);
+      var guideText = urlParams.get('guide') || '';
+      
+      if (!guideText && window._currentHandwriteField) {
+        guideText = window._currentHandwriteField.getAttribute('data-field-handwrite-guide') || '';
+      }
+      
+      // 设置横版引导文案
+      if (guideEl) {
+        guideEl.textContent = guideText;
+        if (guideText) {
           guideEl.classList.remove('is-hidden');
         } else {
           guideEl.classList.add('is-hidden');
+        }
+      }
+      
+      // 设置竖版引导文案
+      var portraitGuideEl = document.getElementById('hwPortraitGuide');
+      if (portraitGuideEl) {
+        portraitGuideEl.textContent = guideText;
+        if (guideText) {
+          portraitGuideEl.classList.remove('is-hidden');
+        } else {
+          portraitGuideEl.classList.add('is-hidden');
         }
       }
       

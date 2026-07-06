@@ -642,6 +642,88 @@
   </style>
 </head>
 <body>
+  <!-- Firebase SDK (用于跨设备实时数据同步) -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+  <script>
+    // Firebase 配置（与PC端保持一致）
+    var firebaseConfig = {
+      apiKey: "AIzaSyBh6XqV6vXqXqXqXqXqXqXqXqXqXqXqXqXq",
+      authDomain: "signature-sync-test.firebaseapp.com",
+      databaseURL: "https://signature-sync-test-default-rtdb.firebaseio.com",
+      projectId: "signature-sync-test",
+      storageBucket: "signature-sync-test.appspot.com",
+      messagingSenderId: "000000000000"
+    };
+    firebase.initializeApp(firebaseConfig);
+    var db = firebase.database();
+    
+    // 从URL获取会话ID
+    function getSessionId() {
+      var params = new URLSearchParams(window.location.search);
+      return params.get('sid') || '';
+    }
+    
+    // 向PC端通知已连接
+    function notifyConnected() {
+      var sid = getSessionId();
+      if (!sid) return;
+      db.ref('signatures/' + sid).update({
+        status: 'connected',
+        connectedAt: firebase.database.ServerValue.TIMESTAMP
+      }).catch(function(err) {
+        console.error('连接通知失败:', err);
+      });
+    }
+    
+    // 将签名数据推送到PC端（等比缩放后）
+    function pushSignatureToPC(canvasElement, fieldSize) {
+      var sid = getSessionId();
+      if (!sid || !canvasElement) return Promise.reject('缺少会话ID或画布');
+      
+      return new Promise(function(resolve, reject) {
+        // 获取原始画布数据
+        var originalDataUrl = canvasElement.toDataURL('image/png');
+        
+        // 创建临时canvas进行等比缩放
+        var img = new Image();
+        img.onload = function() {
+          var targetW = fieldSize.width;
+          var targetH = fieldSize.height;
+          var srcW = img.width;
+          var srcH = img.height;
+          
+          // 计算等比缩放尺寸（保持比例，适应目标尺寸）
+          var scale = Math.min(targetW / srcW, targetH / srcH);
+          var finalW = Math.round(srcW * scale);
+          var finalH = Math.round(srcH * scale);
+          
+          var resizeCanvas = document.createElement('canvas');
+          resizeCanvas.width = finalW;
+          resizeCanvas.height = finalH;
+          var rCtx = resizeCanvas.getContext('2d');
+          rCtx.fillStyle = '#FFFFFF';
+          rCtx.fillRect(0, 0, finalW, finalH);
+          rCtx.drawImage(img, (finalW - finalW * scale) / 2 / scale, 0, finalW, finalH);
+          
+          var resizedDataUrl = resizeCanvas.toDataURL('image/png');
+          
+          // 推送到Firebase
+          db.ref('signatures/' + sid).update({
+            status: 'completed',
+            imageData: resizedDataUrl,
+            timestamp: firebase.database.ServerValue.TIMESTAMP,
+            deviceType: 'mobile'
+          }).then(function() {
+            resolve(resizedDataUrl);
+          }).catch(reject);
+        };
+        img.onerror = reject;
+        img.src = originalDataUrl;
+      });
+    }
+  </script>
+
   <div class="hw-mobile" id="hwMobile">
     <!-- 绘制画布区域 -->
     <div class="hw-mobile__canvas-area" id="hwCanvasArea">
@@ -1464,7 +1546,34 @@
     if (btnPortraitDone) {
       btnPortraitDone.addEventListener('click', function () {
         if (!portraitHasDrawn) return;
-        applyHandwriteToFieldPortrait();
+        
+        var btn = this;
+        btn.textContent = '提交中...';
+        btn.style.opacity = '0.6';
+        
+        // 获取目标控件尺寸（从URL参数或默认值）
+        var params = new URLSearchParams(window.location.search);
+        var fieldW = parseInt(params.get('fw')) || 200;
+        var fieldH = parseInt(params.get('fh')) || 100;
+        
+        pushSignatureToPC(portraitCanvas, { width: fieldW, height: fieldH })
+          .then(function() {
+            btn.textContent = '已完成';
+            btn.style.background = '#29C645';
+            btn.style.color = '#FFFFFF';
+            btn.style.pointerEvents = 'none';
+            
+            // 延迟返回（让用户看到成功状态）
+            setTimeout(function() {
+              if (window._hwMobileOnClose) window._hwMobileOnClose();
+            }, 800);
+          })
+          .catch(function(err) {
+            console.error('签名推送失败:', err);
+            btn.textContent = '完成';
+            btn.style.opacity = '';
+            alert('提交失败，请重试');
+          });
       });
     }
 
@@ -1504,7 +1613,29 @@
 
     btnDone.addEventListener('click', function () {
       if (this.classList.contains('is-disabled')) return;
-      applyHandwriteToField();
+      
+      var btn = this;
+      btn.textContent = '提交中...';
+      
+      // 获取目标控件尺寸
+      var params = new URLSearchParams(window.location.search);
+      var fieldW = parseInt(params.get('fw')) || 200;
+      var fieldH = parseInt(params.get('fh')) || 100;
+      
+      pushSignatureToPC(canvas, { width: fieldW, height: fieldH })
+        .then(function() {
+          btn.textContent = '已完成';
+          btn.style.background = '#29C645';
+          
+          setTimeout(function() {
+            applyHandwriteToField();
+          }, 500);
+        })
+        .catch(function(err) {
+          console.error('签名推送失败:', err);
+          btn.textContent = '完成';
+          alert('提交失败，请重试');
+        });
     });
 
     btnBack.addEventListener('click', function () {
@@ -1515,6 +1646,8 @@
 
     // ===== 关闭/打开 =====
     function open() {
+      // 通知PC端移动端已连接
+      setTimeout(notifyConnected, 500);
       var field = window._currentHandwriteField;
       if (field) {
         var guide = field.getAttribute('data-field-handwrite-guide') || '';

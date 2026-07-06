@@ -425,6 +425,8 @@
       height: 8px;
       background: #FF9500;
       border-radius: 50%;
+    }
+    .hw-pulse--active {
       animation: hw-pulse 1.5s ease-in-out infinite;
     }
 
@@ -442,6 +444,22 @@
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <!-- Firebase SDK (用于跨设备实时数据同步) -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+  <script>
+    // Firebase 配置（使用公开的测试项目配置，实际生产环境请替换为自有配置）
+    var firebaseConfig = {
+      apiKey: "AIzaSyBh6XqV6vXqXqXqXqXqXqXqXqXqXqXqXqXq",
+      authDomain: "signature-sync-test.firebaseapp.com",
+      databaseURL: "https://signature-sync-test-default-rtdb.firebaseio.com",
+      projectId: "signature-sync-test",
+      storageBucket: "signature-sync-test.appspot.com",
+      messagingSenderId: "000000000000"
+    };
+    firebase.initializeApp(firebaseConfig);
+    var db = firebase.database();
+  </script>
   <script src="./components/i18n.js" defer></script>
   <script src="./components/select.js" defer></script>
   <script src="./components/input-number.js" defer></script>
@@ -1226,14 +1244,130 @@
       closeModal();
     });
 
-    // ===== 手机手绘 Tab 切换 =====
+    // ===== 手机手绘 Tab 切换 + Firebase 实时同步 =====
     var tabs = document.querySelectorAll('.handwrite-modal__tab');
     var drawView = document.getElementById('hwDrawView');
     var qrCodeView = document.getElementById('hwQRCodeView');
     var qrImg = document.getElementById('hwQRCodeImg');
+    var qrStatusText = document.querySelector('.handwrite-modal__qrcode-status span:last-child');
+    
+    // 当前会话ID和Firebase监听引用
+    var currentSessionId = null;
+    var firebaseListener = null;
 
     // GitHub Pages 移动端签署地址
     var MOBILE_SIGN_URL = 'https://xianchen-cc.github.io/signature-sync/pages/drawing-handwrite-mobile.html?mode=landscape';
+
+    // 生成唯一会话ID
+    function generateSessionId() {
+      return 'sess_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 8);
+    }
+
+    // 开始Firebase监听（等待移动端回传签名数据）
+    function startFirebaseListener(sessionId) {
+      // 先清理之前的监听
+      stopFirebaseListener();
+      
+      currentSessionId = sessionId;
+      var ref = db.ref('signatures/' + sessionId);
+      
+      // 监听数据变化
+      firebaseListener = ref.on('value', function(snapshot) {
+        var data = snapshot.val();
+        if (data && data.imageData && data.status === 'completed') {
+          // 移动端已完成签名并传回数据
+          onMobileSignatureReceived(data);
+        } else if (data && data.status === 'connected') {
+          // 移动端已连接
+          updateQRStatus('connected', '手机已连接，等待签名...');
+        }
+      }, function(error) {
+        console.error('Firebase 监听错误:', error);
+        updateQRStatus('error', '连接异常，请刷新重试');
+      });
+      
+      // 设置5分钟自动过期（清理数据）
+      ref.update({ status: 'waiting', createdAt: firebase.database.ServerValue.TIMESTAMP });
+      setTimeout(function() {
+        if (currentSessionId === sessionId) {
+          ref.remove();
+        }
+      }, 300000);
+    }
+
+    // 停止Firebase监听
+    function stopFirebaseListener() {
+      if (firebaseListener && currentSessionId) {
+        db.ref('signatures/' + currentSessionId).off('value', firebaseListener);
+        
+        // 清理数据
+        db.ref('signatures/' + currentSessionId).remove().catch(function(){});
+        
+        firebaseListener = null;
+        currentSessionId = null;
+      }
+    }
+
+    // 接收到移动端签名数据的处理
+    function onMobileSignatureReceived(data) {
+      updateQRStatus('success', '签名已接收！');
+      
+      // 将移动端签名应用到控件
+      var field = window._currentHandwriteField;
+      if (!field) return;
+      
+      var body = field.querySelector('.ns-envelope-editor-field__body');
+      if (!body) return;
+
+      var img = body.querySelector('.ns-envelope-editor-field__handwrite-image');
+      if (!img) {
+        img = document.createElement('img');
+        img.className = 'ns-envelope-editor-field__handwrite-image';
+        img.alt = '';
+        img.draggable = false;
+        body.appendChild(img);
+      }
+      
+      // 使用回传的图片数据（已经是等比缩放后的）
+      img.src = data.imageData;
+      img.classList.add('is-visible');
+
+      // 隐藏引导文案和图标
+      var guide = body.querySelector('[data-handwrite-guide]');
+      if (guide) guide.classList.add('is-hidden');
+      var icon = body.querySelector('.ns-envelope-editor-field__icon');
+      if (icon) icon.style.display = 'none';
+      var label = body.querySelector('.ns-envelope-editor-field__label');
+      if (label) label.style.display = 'none';
+      
+      var guideTextEl = document.getElementById('handwriteGuideText');
+      if (guideTextEl) guideTextEl.classList.add('is-hidden');
+
+      // 延迟关闭弹窗，让用户看到"签名已接收"状态
+      setTimeout(function() {
+        closeModal();
+        stopFirebaseListener();
+      }, 800);
+    }
+
+    // 更新二维码视图状态文字和样式
+    function updateQRStatus(status, text) {
+      if (!qrStatusText || !qrCodeView) return;
+      qrStatusText.textContent = text;
+      
+      var dot = qrCodeView.querySelector('.hw-qrcode-dot');
+      if (dot) {
+        dot.className = 'hw-qrcode-dot'; // 重置动画
+        
+        if (status === 'waiting' || status === 'connected') {
+          dot.classList.add('hw-pulse--active');
+        } else if (status === 'success') {
+          dot.style.background = '#29C645'; // 绿色表示成功
+        } else if (status === 'error') {
+          dot.style.background = '#EA2C2C'; // 红色表示错误
+        }
+      }
+    }
 
     tabs.forEach(function(tab) {
       tab.addEventListener('click', function() {
@@ -1248,8 +1382,13 @@
           drawView.style.display = 'none';
           qrCodeView.style.display = 'flex';
           
-          // 生成并显示二维码（使用在线API）
-          generateQRCode();
+          // 生成新会话ID并启动Firebase监听
+          var sessionId = generateSessionId();
+          startFirebaseListener(sessionId);
+          
+          // 生成并显示二维码（使用在线API，URL中包含会话ID）
+          updateQRStatus('waiting', '等待手机连接...');
+          generateQRCode(sessionId);
         } else if (tabType === 'draw') {
           // 切换回在此绘制tab
           tabs.forEach(function(t) { t.classList.remove('handwrite-modal__tab--active'); });
@@ -1258,20 +1397,30 @@
           // 显示绘制视图，隐藏二维码视图
           drawView.style.display = 'flex';
           qrCodeView.style.display = 'none';
+          
+          // 停止Firebase监听
+          stopFirebaseListener();
         }
       });
     });
 
     // 使用在线API生成二维码（无需JS库）
-    function generateQRCode() {
+    function generateQRCode(sessionId) {
       if (!qrImg) return;
       
-      // 构建URL（可传入当前签署字段信息）
+      // 构建URL（包含会话ID用于Firebase通信）
       var field = window._currentHandwriteField;
       var url = MOBILE_SIGN_URL;
       if (field) {
         var guide = field.getAttribute('data-field-handwrite-guide') || '';
         if (guide) url += '&guide=' + encodeURIComponent(guide);
+        
+        // 传递控件尺寸，用于移动端等比缩放签名图片
+        var fieldRect = field.getBoundingClientRect();
+        url += '&fw=' + Math.round(fieldRect.width) + '&fh=' + Math.round(fieldRect.height);
+      }
+      if (sessionId) {
+        url += '&sid=' + encodeURIComponent(sessionId);
       }
 
       // 使用 QR Server API 生成二维码图片（免费、稳定、无需依赖）
@@ -1359,6 +1508,8 @@
     function closeModal() {
       overlay.classList.remove('is-open');
       overlay.setAttribute('aria-hidden', 'true');
+      // 关闭弹窗时停止Firebase监听
+      stopFirebaseListener();
     }
 
     function applyHandwriteToField() {

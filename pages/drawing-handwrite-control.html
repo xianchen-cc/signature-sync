@@ -404,7 +404,8 @@
       margin-bottom: 20px;
     }
 
-    .handwrite-modal__qrcode-canvas {
+    .handwrite-modal__qrcode-canvas,
+    .handwrite-modal__qrcode-img {
       width: 100%;
       height: 100%;
       display: block;
@@ -1046,7 +1047,7 @@
         <div class="handwrite-modal__qrcode-view" id="hwQRCodeView" style="display: none;">
           <div class="handwrite-modal__qrcode-container">
             <div class="handwrite-modal__qrcode-wrap">
-              <canvas id="hwQRCodeCanvas"></canvas>
+              <img id="hwQRCodeImg" class="handwrite-modal__qrcode-img" alt="扫码签名" />
             </div>
             <div class="handwrite-modal__qrcode-status">
               <span class="hw-qrcode-dot"></span>
@@ -1229,7 +1230,7 @@
     var tabs = document.querySelectorAll('.handwrite-modal__tab');
     var drawView = document.getElementById('hwDrawView');
     var qrCodeView = document.getElementById('hwQRCodeView');
-    var qrCanvas = document.getElementById('hwQRCodeCanvas');
+    var qrImg = document.getElementById('hwQRCodeImg');
 
     // GitHub Pages 移动端签署地址
     var MOBILE_SIGN_URL = 'https://xianchen-cc.github.io/signature-sync/pages/drawing-handwrite-mobile.html?mode=landscape';
@@ -1247,7 +1248,7 @@
           drawView.style.display = 'none';
           qrCodeView.style.display = 'flex';
           
-          // 生成并显示二维码
+          // 生成并显示二维码（使用在线API）
           generateQRCode();
         } else if (tabType === 'draw') {
           // 切换回在此绘制tab
@@ -1261,14 +1262,9 @@
       });
     });
 
-    // 生成二维码
-    var qrCodeGenerated = false;
-    
+    // 使用在线API生成二维码（无需JS库）
     function generateQRCode() {
-      if (!qrCanvas) return;
-      
-      var ctx = qrCanvas.getContext('2d');
-      var size = 176; // 200px容器 - 24px padding
+      if (!qrImg) return;
       
       // 构建URL（可传入当前签署字段信息）
       var field = window._currentHandwriteField;
@@ -1278,141 +1274,30 @@
         if (guide) url += '&guide=' + encodeURIComponent(guide);
       }
 
-      // 显示加载中
-      qrCanvas.width = size;
-      qrCanvas.height = size;
-      ctx.fillStyle = '#F5F5F5';
-      ctx.fillRect(0, 0, size, size);
-      ctx.fillStyle = '#8C8C8C';
-      ctx.font = '14px -apple-system, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('正在生成...', size / 2, size / 2);
+      // 使用 QR Server API 生成二维码图片（免费、稳定、无需依赖）
+      var qrApiUrl = 'https://api.qrserver.com/v1/create-qr-code/?' +
+        'size=176x176&' +
+        'data=' + encodeURIComponent(url) + '&' +
+        'bgcolor=ffffff&' +
+        'color=000000&' +
+        'qzone=1&' +
+        'margin=2';
 
-      // 尝试使用已加载的 qrcode 库
-      if (typeof QRCode !== 'undefined') {
-        drawQRCodeWithLibrary(url, size);
-        return;
-      }
+      // 设置图片源
+      qrImg.src = qrApiUrl;
 
-      // 尝试多个CDN源加载 qrcode 库
-      loadQRCodeFromMultipleSources(url, size);
-    }
-
-    // CDN列表（按优先级排序）
-    var QR_CDN_SOURCES = [
-      'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js',
-      'https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js',
-      'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'
-    ];
-    var currentCdnIndex = 0;
-
-    function loadQRCodeFromMultipleSources(url, size) {
-      if (currentCdnIndex >= QR_CDN_SOURCES.length) {
-        // 所有CDN都失败，使用内置简易方案
-        drawSimpleQRCode(url, size);
-        return;
-      }
-
-      var script = document.createElement('script');
-      script.src = QR_CDN_SOURCES[currentCdnIndex];
-      currentCdnIndex++;
-      
-      script.onload = function() {
-        if (typeof QRCode !== 'undefined') {
-          drawQRCodeWithLibrary(url, size);
-        } else {
-          drawSimpleQRCode(url, size);
-        }
+      // 错误处理：如果API失败显示备用内容
+      qrImg.onerror = function() {
+        this.onerror = null;
+        // 失败时显示占位图
+        this.src = 'data:image/svg+xml,' + encodeURIComponent(
+          '<svg xmlns="http://www.w3.org/2000/svg" width="176" height="176" viewBox="0 0 176 176">' +
+          '<rect fill="#f5f5f5" width="176" height="176"/>' +
+          '<text x="88" y="80" text-anchor="middle" fill="#666" font-size="12" font-family="sans-serif">二维码生成失败</text>' +
+          '<text x="88" y="100" text-anchor="middle" fill="#999" font-size="10" font-family="sans-serif">请刷新页面重试</text>' +
+          '</svg>'
+        );
       };
-      
-      script.onerror = function() {
-        // 尝试下一个CDN
-        loadQRCodeFromMultipleSources(url, size);
-      };
-      
-      document.head.appendChild(script);
-    }
-
-    // 使用 qrcode 库绘制
-    function drawQRCodeWithLibrary(url, size) {
-      try {
-        var ctx = qrCanvas.getContext('2d');
-        qrCanvas.width = size;
-        qrCanvas.height = size;
-        
-        new QRCode(ctx, {
-          content: url,
-          width: size,
-          height: size,
-          colorDark: '#000000',
-          colorLight: '#FFFFFF',
-          correctLevel: QRCode.CorrectLevel.M
-        });
-        qrCodeGenerated = true;
-      } catch(e) {
-        drawSimpleQRCode(url, size);
-      }
-    }
-
-    // 内置简易二维码生成（当所有CDN失败时）
-    function drawSimpleQRCode(text, size) {
-      var ctx = qrCanvas.getContext('2d');
-      qrCanvas.width = size;
-      qrCanvas.height = size;
-      
-      // 绘制背景
-      ctx.fillStyle = '#FFFFFF';
-      ctx.fillRect(0, 0, size, size);
-      
-      // 由于无法真正生成二维码，显示URL的简化版本和提示
-      ctx.fillStyle = '#262626';
-      ctx.font = 'bold 11px monospace';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      
-      // 显示简化的URL提示
-      var shortUrl = text.replace(/^https?:\/\//, '').substring(0, 30);
-      if (text.length > 30) shortUrl += '...';
-      
-      // 分行显示URL
-      var lines = [];
-      for (var i = 0; i < shortUrl.length; i += 22) {
-        lines.push(shortUrl.substring(i, i + 22));
-      }
-      var lineHeight = 14;
-      var startY = size / 2 - (lines.length * lineHeight) / 2;
-      
-      for (var j = 0; j < lines.length; j++) {
-        ctx.fillText(lines[j], size / 2, startY + j * lineHeight);
-      }
-      
-      // 底部显示"请复制链接"
-      ctx.font = '10px -apple-system, sans-serif';
-      ctx.fillStyle = '#8C8C8C';
-      ctx.fillText('请长按复制链接到浏览器打开', size / 2, size - 20);
-      
-      // 添加边框装饰模拟二维码外观
-      ctx.strokeStyle = '#E5E5E5';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(4, 4, size - 8, size - 8);
-      
-      // 四角定位图案模拟
-      drawQRCorner(ctx, 8, 8, 24);
-      drawQRCorner(ctx, size - 32, 8, 24);
-      drawQRCorner(ctx, 8, size - 32, 24);
-      
-      qrCodeGenerated = false; // 标记为降级模式
-    }
-
-    // 绘制二维码定位角
-    function drawQRCorner(ctx, x, y, s) {
-      ctx.fillStyle = '#000000';
-      ctx.fillRect(x, y, s, s);
-      ctx.fillStyle = '#FFFFFF';
-      ctx.fillRect(x + 4, y + 4, s - 8, s - 8);
-      ctx.fillStyle = '#000000';
-      ctx.fillRect(x + 7, y + 7, s - 14, s - 14);
     }
 
     document.addEventListener('keydown', function(e) {

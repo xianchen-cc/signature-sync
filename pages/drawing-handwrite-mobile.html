@@ -18,24 +18,54 @@
 
     /* ===== 横屏模式（CSS旋转模拟） ===== */
     .hw-landscape-rotate {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vh;
-      height: 100vw;
-      transform-origin: top left;
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vh !important;
+      height: 100vw !important;
+      transform-origin: 0 0;
       transform: rotate(90deg) translateY(-100%);
+      -webkit-transform-origin: 0 0;
+      -webkit-transform: rotate(90deg) translateY(-100%);
       overflow: hidden;
-      z-index: 9999;
+      z-index: 99999;
       background: #FFFFFF;
     }
-    .hw-landscape-rotate .hw-mobile {
-      width: 100%;
-      height: 100%;
+    
+    .hw-landscape-active {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vh !important;
+      height: 100vw !important;
+      max-width: none !important;
+      max-height: none !important;
     }
-    /* 横屏模式下禁用系统旋转提示 */
+    
+    .hw-landscape-rotate .hw-mobile {
+      width: 100% !important;
+      height: 100% !important;
+      min-width: 0;
+      min-height: 0;
+    }
+    
+    .hw-landscape-rotate .hw-mobile__canvas-area,
+    .hw-landscape-rotate .hw-portrait__canvas-area {
+      flex: 1;
+      min-height: 0;
+    }
+    
+    /* 横屏模式下隐藏系统旋转提示 */
     @media screen and (orientation: portrait) {
-      .hw-landscape-rotate { display: block; }
+      .hw-landscape-rotate { display: block !important; }
+    }
+    
+    /* 强制body/html在横屏模式下不滚动 */
+    body.hw-landscape-mode,
+    html.hw-landscape-mode {
+      overflow: hidden !important;
+      width: 100vw !important;
+      height: 100vh !important;
     }
 
     /* ===== 全屏容器 ===== */
@@ -361,18 +391,19 @@
       background: #FFFFFF;
       width: 100%;
       position: relative;
+      overflow: visible;
     }
     /* 竖版工具栏顶部渐变遮罩 - 从白色向上渐变为透明 */
     .hw-portrait__toolbar::before {
       content: '';
       position: absolute;
-      top: -20px;
+      top: -24px;
       left: 0;
       right: 0;
-      height: 20px;
+      height: 24px;
       background: linear-gradient(to top, #FFFFFF 0%, rgba(255,255,255,0) 100%);
       pointer-events: none;
-      z-index: 2;
+      z-index: 5;
     }
     .hw-portrait__toolbar-top {
       display: flex;
@@ -381,7 +412,8 @@
       align-items: center;
       padding: 16px;
       gap: 24px;
-      width: 375px;
+      width: 100%;
+      min-width: 0;
       height: 71px;
       background: #FFFFFF;
       border-top: 1px solid #EAEBF0;
@@ -390,7 +422,8 @@
       flex-grow: 0;
     }
     .hw-portrait__toolbar-bottom {
-      width: 375px;
+      width: 100%;
+      min-width: 0;
       height: 72px;
       background: #FFFFFF;
       border-top: 1px solid #F5F5F5;
@@ -889,18 +922,35 @@
       if (isLandscapeMode) return;
       isLandscapeMode = true;
       
+      // 标记body/html为横屏模式（防止滚动）
+      document.body.classList.add('hw-landscape-mode');
+      document.documentElement.classList.add('hw-landscape-mode');
+      
       // 创建旋转容器
       rotateContainer = document.createElement('div');
       rotateContainer.className = 'hw-landscape-rotate';
       
       // 将hw-mobile移入旋转容器
       var hwMobile = document.getElementById('hwMobile');
+      
+      // 先设置初始尺寸确保正确计算
+      var vw = window.innerWidth || document.documentElement.clientWidth || 375;
+      var vh = window.innerHeight || document.documentElement.clientHeight || 667;
+      
+      // 强制设置body和html尺寸
+      document.body.style.width = vw + 'px';
+      document.body.style.height = vh + 'px';
+      document.documentElement.style.width = vw + 'px';
+      document.documentElement.style.height = vh + 'px';
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+      
+      // 添加到body
       document.body.appendChild(rotateContainer);
       rotateContainer.appendChild(hwMobile);
       
-      // 禁止页面滚动
-      document.body.style.overflow = 'hidden';
-      document.documentElement.style.overflow = 'hidden';
+      // 强制重绘以确保transform生效
+      void rotateContainer.offsetHeight;
     }
 
     // 禁用横屏旋转模式
@@ -908,11 +958,21 @@
       if (!isLandscapeMode) return;
       isLandscapeMode = false;
       
+      // 移除横屏模式标记
+      document.body.classList.remove('hw-landscape-mode');
+      document.documentElement.classList.remove('hw-landscape-mode');
+      
       var hwMobile = document.getElementById('hwMobile');
       if (rotateContainer && hwMobile) {
         document.body.appendChild(hwMobile);
         rotateContainer.remove();
         rotateContainer = null;
+        
+        // 重置body样式
+        document.body.style.width = '';
+        document.body.style.height = '';
+        document.documentElement.style.width = '';
+        document.documentElement.style.height = '';
       }
     }
 

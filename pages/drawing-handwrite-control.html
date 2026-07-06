@@ -1138,6 +1138,88 @@
       closeModal();
     });
 
+    // ===== 手机手绘 Tab 切换 =====
+    var tabs = document.querySelectorAll('.handwrite-modal__tab');
+    var phoneTab = document.querySelector('.handwrite-modal__tab[data-tab="phone"]');
+    var drawTab = document.querySelector('.handwrite-modal__tab[data-tab="draw"]');
+    
+    // GitHub Pages 二维码弹窗地址
+    var QR_POPUP_URL = 'https://xianchen-cc.github.io/signature-sync/pages/qrcode-popup.html';
+    var qrPopupWindow = null;
+
+    tabs.forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        var tabType = this.getAttribute('data-tab');
+        
+        if (tabType === 'phone') {
+          // 切换到手机手绘tab
+          tabs.forEach(function(t) { t.classList.remove('handwrite-modal__tab--active'); });
+          this.classList.add('handwrite-modal__tab--active');
+          
+          // 打开二维码弹窗
+          openQRCodePopup();
+        } else if (tabType === 'draw') {
+          // 切换回在此绘制tab
+          tabs.forEach(function(t) { t.classList.remove('handwrite-modal__tab--active'); });
+          this.classList.add('handwrite-modal__tab--active');
+          
+          // 关闭二维码弹窗（如果打开的话）
+          closeQRCodePopup();
+        }
+      });
+    });
+
+    function openQRCodePopup() {
+      // 构建二维码URL（可传入当前签署字段信息）
+      var field = window._currentHandwriteField;
+      var params = new URLSearchParams();
+      if (field) {
+        var guide = field.getAttribute('data-field-handwrite-guide') || '';
+        if (guide) params.set('guide', guide);
+      }
+      
+      var url = QR_POPUP_URL + (params.toString() ? '?' + params.toString() : '');
+      
+      // 弹出新窗口显示二维码
+      var w = Math.min(450, window.innerWidth - 100);
+      var h = Math.min(620, window.innerHeight - 100);
+      var left = (window.innerWidth - w) / 2 + window.screenX;
+      var top = (window.innerHeight - h) / 2 + window.screenY;
+      
+      qrPopupWindow = window.open(
+        url,
+        'mobileHandwriteQR',
+        'width=' + w + ',height=' + h + ',left=' + left + ',top=' + top +
+        ',scrollbars=no,resizable=no,toolbar=no,menubar=no'
+      );
+      
+      // 监听弹窗关闭
+      if (qrPopupWindow) {
+        var checkClosed = setInterval(function() {
+          try {
+            if (qrPopupWindow.closed) {
+              clearInterval(checkClosed);
+              qrPopupWindow = null;
+              // 可选：切回"在此绘制"tab
+              if (drawTab) {
+                tabs.forEach(function(t) { t.classList.remove('handwrite-modal__tab--active'); });
+                drawTab.classList.add('handwrite-modal__tab--active');
+              }
+            }
+          } catch(e) {
+            clearInterval(checkClosed);
+          }
+        }, 500);
+      }
+    }
+
+    function closeQRCodePopup() {
+      if (qrPopupWindow && !qrPopupWindow.closed) {
+        qrPopupWindow.close();
+      }
+      qrPopupWindow = null;
+    }
+
     document.addEventListener('keydown', function(e) {
       if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
         e.preventDefault();

@@ -617,7 +617,21 @@
     function resetCanvas() { ctx.clearRect(0,0,canvas.width,canvas.height); undoStack=[]; hasDrawn=false; updateDoneButton(); saveState(); }
     function updateDoneButton() { btnDone.classList.toggle('is-disabled', !hasDrawn); }
 
-    function getPos(e) { var rect = canvas.getBoundingClientRect(), cx=e.touches?e.touches[0].clientX:e.clientX, cy=e.touches?e.touches[0].clientY:e.clientY; return{x:cx-rect.left,y:cy-rect.top}; }
+    function getPos(e) {
+      var cx = e.touches ? e.touches[0].clientX : e.clientX;
+      var cy = e.touches ? e.touches[0].clientY : e.clientY;
+      var rect = canvas.getBoundingClientRect();
+      var x = cx - rect.left, y = cy - rect.top;
+
+      // 竖屏时页面被 rotate(-90deg)，需要反转坐标系
+      if (window.matchMedia('(orientation: portrait)').matches) {
+        var cw = canvas.clientWidth, ch = canvas.clientHeight;
+        // rotate(-90deg): 屏幕x → 元素y(从右往左), 屏幕y → 元素x
+        x = cy - rect.top;
+        y = cw - (cx - rect.left);
+      }
+      return { x: x, y: y };
+    }
     function startDraw(e){e.preventDefault();isDrawing=true;var p=getPos(e);lastX=p.x;lastY=p.y;ctx.beginPath();ctx.arc(lastX,lastY,currentSize/2,0,Math.PI*2);ctx.fillStyle=currentColor;ctx.fill();}
     function moveDraw(e){if(!isDrawing)return;e.preventDefault();var p=getPos(e);ctx.beginPath();ctx.moveTo(lastX,lastY);ctx.lineTo(p.x,p.y);ctx.strokeStyle=currentColor;ctx.lineWidth=currentSize;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();lastX=p.x;lastY=p.y;}
     function endDraw(){if(!isDrawing)return;isDrawing=false;hasDrawn=true;updateDoneButton();saveState();if(guideEl)guideEl.classList.add('is-hidden');}

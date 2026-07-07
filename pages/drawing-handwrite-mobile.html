@@ -53,18 +53,26 @@
     }
     .hw-mobile__guide.is-hidden { display: none; }
 
-    /* ===== 底部工具栏 (Figma #95:877: 813x72, padding 16px 0) ===== */
+    /* ===== 底部工具栏 (Figma #95:877: 813x72) ===== */
     .hw-mobile__toolbar {
       flex-shrink: 0;
       display: flex;
       flex-direction: row;
       align-items: center;
-      padding: 16px 20px;
+      justify-content: space-between;  /* 左侧返回, 右侧工具组+操作按钮 */
+      padding: 16px 16px;             /* 完成按钮右侧边距固定 16px */
       padding-bottom: calc(16px + env(safe-area-inset-bottom, 0));
       background: #FFFFFF;
-      box-shadow: 0px -2px 20px 0 rgba(0, 0, 0, 0.1);  /* Figma #95:876 effects */
+      box-shadow: 0px -2px 20px 0 rgba(0, 0, 0, 0.1);
       z-index: 10;
-      gap: 16px;  /* 工具组与操作按钮间距 16px */
+    }
+
+    /* ===== 右侧区域 (工具组+操作按钮, 整体右对齐) ===== */
+    .hw-mobile__right-group {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 16px;  /* 工具组与重写按钮间距 16px */
     }
 
     /* ===== 返回按钮区域 (Figma #95:878: 44px宽, gap 4px) ===== */
@@ -369,44 +377,47 @@
         <span class="hw-mobile__back-label">返回</span>
       </button>
 
-      <!-- 中: 工具组 (Figma #95:882) -->
-      <div class="hw-mobile__tools-group">
-        <!-- 颜色按钮 (EL-0d9e1a84: 32x32, bg #FFF, r 5.33px) -->
-        <button class="hw-mobile__tool-btn" id="hwBtnColor" data-action="color">
-          <!-- 颜色圆点 (EL-fcdbb995: 18.67x18.67, #000000) -->
-          <span class="hw-mobile__color-dot" id="hwColorDot"></span>
-        </button>
+      <!-- 右侧区域 (工具组+操作按钮, 整体右对齐) -->
+      <div class="hw-mobile__right-group">
+        <!-- 工具组 (Figma #95:882) -->
+        <div class="hw-mobile__tools-group">
+          <!-- 颜色按钮 (EL-0d9e1a84: 32x32, bg #FFF, r 5.33px) -->
+          <button class="hw-mobile__tool-btn" id="hwBtnColor" data-action="color">
+            <!-- 颜色圆点 (EL-fcdbb995: 18.67x18.67, #000000) -->
+            <span class="hw-mobile__color-dot" id="hwColorDot"></span>
+          </button>
 
-        <!-- 画笔按钮 (EL-0d9e1a84: 32x32) -->
-        <button class="hw-mobile__tool-btn" id="hwBtnPen" data-action="pen">
-          <span class="hw-mobile__tool-icon">
-            <!-- 画笔SVG (#95:908: 18.53x13.9, stroke #262626, w 1.6) -->
-            <svg viewBox="0 0 21 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M0.825856 9.17886C4.68766 3.44651 11.0316 -0.58221 13.0426 1.28842C15.9232 3.96802 3.7574 12.5672 6.33492 14.2537C8.22859 15.4928 16.4566 6.07165 18.0877 8.23122C19.3504 9.90295 13.6902 13.4971 15.6093 14.9112C16.9172 15.875 18.8074 13.9458 19.9538 12.6786" stroke="#262626" stroke-width="1.65161" stroke-linecap="round"/>
-            </svg>
-          </span>
-        </button>
+          <!-- 画笔按钮 (EL-0d9e1a84: 32x32) -->
+          <button class="hw-mobile__tool-btn" id="hwBtnPen" data-action="pen">
+            <span class="hw-mobile__tool-icon">
+              <!-- 画笔SVG (#95:908: 18.53x13.9, stroke #262626, w 1.6) -->
+              <svg viewBox="0 0 21 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M0.825856 9.17886C4.68766 3.44651 11.0316 -0.58221 13.0426 1.28842C15.9232 3.96802 3.7574 12.5672 6.33492 14.2537C8.22859 15.4928 16.4566 6.07165 18.0877 8.23122C19.3504 9.90295 13.6902 13.4971 15.6093 14.9112C16.9172 15.875 18.8074 13.9458 19.9538 12.6786" stroke="#262626" stroke-width="1.65161" stroke-linecap="round"/>
+              </svg>
+            </span>
+          </button>
 
-        <!-- 撤销按钮 (#95:912: 32x32, 白底, r 5px) -->
-        <button class="hw-mobile__tool-btn hw-mobile__undo-btn" id="hwBtnUndo" data-action="undo">
-          <span class="hw-mobile__tool-icon">
-            <!-- 撤销SVG (含白底rect+路径) - 从Figma导出 -->
-            <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect width="32" height="32" rx="5" fill="white"/>
-              <path d="M17.5833 11.9102C20.9606 11.9102 23.6985 14.6051 23.6985 17.9295C23.6985 21.15 21.129 23.7798 17.8978 23.9409L17.5833 23.9487L10.1941 23.9487C9.77195 23.9487 9.42971 23.6119 9.42971 23.1963C9.42971 22.7808 9.77195 22.4439 10.1941 22.4439L17.5833 22.4439C20.1163 22.4439 22.1697 20.4227 22.1697 17.9295C22.1697 15.4362 20.1163 13.415 17.5833 13.415L10.1941 13.415C9.77195 13.415 9.42971 13.0781 9.42971 12.6626C9.42971 12.2471 9.77195 11.9102 10.1941 11.9102L17.5833 11.9102Z" fill="#262626"/>
-              <path d="M7.92237 13.1341C7.62386 12.8403 7.62386 12.3639 7.92237 12.0701C8.22089 11.7762 8.70488 11.7762 9.0034 12.0701L12.9671 15.9716C13.2657 16.2655 13.2657 16.7419 12.9671 17.0357C12.6686 17.3295 12.1846 17.3295 11.8861 17.0357L7.92237 13.1341Z" fill="#262626"/>
-              <path d="M9.0034 13.1348C8.70489 13.4286 8.22089 13.428 7.92237 13.1341C7.62386 12.8403 7.62386 12.3639 7.92237 12.0701L11.8861 8.16911C12.1846 7.87527 12.6686 7.87527 12.9672 8.16911C13.2657 8.46294 13.2657 8.93934 12.9672 9.23317L9.0034 13.1348Z" fill="#262626"/>
-            </svg>
-          </span>
-        </button>
-      </div>
+          <!-- 撤销按钮 (#95:912: 32x32, 白底, r 5px) -->
+          <button class="hw-mobile__tool-btn hw-mobile__undo-btn" id="hwBtnUndo" data-action="undo">
+            <span class="hw-mobile__tool-icon">
+              <!-- 撤销SVG (含白底rect+路径) - 从Figma导出 -->
+              <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="32" height="32" rx="5" fill="white"/>
+                <path d="M17.5833 11.9102C20.9606 11.9102 23.6985 14.6051 23.6985 17.9295C23.6985 21.15 21.129 23.7798 17.8978 23.9409L17.5833 23.9487L10.1941 23.9487C9.77195 23.9487 9.42971 23.6119 9.42971 23.1963C9.42971 22.7808 9.77195 22.4439 10.1941 22.4439L17.5833 22.4439C20.1163 22.4439 22.1697 20.4227 22.1697 17.9295C22.1697 15.4362 20.1163 13.415 17.5833 13.415L10.1941 13.415C9.77195 13.415 9.42971 13.0781 9.42971 12.6626C9.42971 12.2471 9.77195 11.9102 10.1941 11.9102L17.5833 11.9102Z" fill="#262626"/>
+                <path d="M7.92237 13.1341C7.62386 12.8403 7.62386 12.3639 7.92237 12.0701C8.22089 11.7762 8.70488 11.7762 9.0034 12.0701L12.9671 15.9716C13.2657 16.2655 13.2657 16.7419 12.9671 17.0357C12.6686 17.3295 12.1846 17.3295 11.8861 17.0357L7.92237 13.1341Z" fill="#262626"/>
+                <path d="M9.0034 13.1348C8.70489 13.4286 8.22089 13.428 7.92237 13.1341C7.62386 12.8403 7.62386 12.3639 7.92237 12.0701L11.8861 8.16911C12.1846 7.87527 12.6686 7.87527 12.9672 8.16911C13.2657 8.46294 13.2657 8.93934 12.9672 9.23317L9.0034 13.1348Z" fill="#262626"/>
+              </svg>
+            </span>
+          </button>
+        </div>
 
-      <!-- 右: 操作按钮组 (Figma #95:914) -->
-      <div class="hw-mobile__actions-group">
-        <!-- 重写按钮 (#95:916: 120x40, pad 10px, border #EAEBF0, r 2px) -->
-        <button class="hw-mobile__action-btn hw-mobile__action-btn--redo" id="hwBtnRedo">重写</button>
-        <!-- 完成按钮 (#95:919: 120x40, bg #5F11F1, pad 8px 16px, disabled opa 0.4) -->
-        <button class="hw-mobile__action-btn hw-mobile__action-btn--done is-disabled" id="hwBtnDone">完成</button>
+        <!-- 操作按钮组 (Figma #95:914) -->
+        <div class="hw-mobile__actions-group">
+          <!-- 重写按钮 (#95:916: 120x40, pad 10px, border #EAEBF0, r 2px) -->
+          <button class="hw-mobile__action-btn hw-mobile__action-btn--redo" id="hwBtnRedo">重写</button>
+          <!-- 完成按钮 (#95:919: 120x40, bg #5F11F1, pad 8px 16px, disabled opa 0.4) -->
+          <button class="hw-mobile__action-btn hw-mobile__action-btn--done is-disabled" id="hwBtnDone">完成</button>
+        </div>
       </div>
     </div>
 

@@ -370,7 +370,7 @@
     @media screen and (orientation: portrait) {
       #hwMobile {
         position: fixed;
-        top: 0; left: 100%;
+        top: 0; left: 0;
         width: 100vh;
         height: 100vw;
         transform-origin: 0 0;
@@ -378,6 +378,7 @@
       }
       body {
         overflow: hidden;
+        background: #000;
       }
     }
     @media screen and (orientation: landscape) {
@@ -385,6 +386,7 @@
       #hwMobile {
         transform: none;
         width: 100%; height: 100%;
+        position: relative;
       }
     }
   </style>
@@ -614,7 +616,7 @@
     function updateDoneButton() { btnDone.classList.toggle('is-disabled', !hasDrawn); }
 
     function getPos(e) { var rect = canvas.getBoundingClientRect(), cx=e.touches?e.touches[0].clientX:e.clientX, cy=e.touches?e.touches[0].clientY:e.clientY; return{x:cx-rect.left,y:cy-rect.top}; }
-    function startDraw(e){e.preventDefault();isDrawing=true;var p=getPos(e);lastX=p.x;lastY=p.y;ctx.beginPath();ctx.arc(lastX,lastY,currentSize/2,0,Math.PI*2);ctx.fillStyle=currentColor;ctx.fill();}
+    function startDraw(e){e.preventDefault();isDrawing=true;var p=getPos(e);lastX=p.x;lastY=p.y;ctx.beginPath();ctx.arc(lastX,lastY,currentSize/2,0,Math.PI*2);ctx.fillStyle=currentColor;ctx.fill();lockLandscape();}
     function moveDraw(e){if(!isDrawing)return;e.preventDefault();var p=getPos(e);ctx.beginPath();ctx.moveTo(lastX,lastY);ctx.lineTo(p.x,p.y);ctx.strokeStyle=currentColor;ctx.lineWidth=currentSize;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();lastX=p.x;lastY=p.y;}
     function endDraw(){if(!isDrawing)return;isDrawing=false;hasDrawn=true;updateDoneButton();saveState();if(guideEl)guideEl.classList.add('is-hidden');}
 
@@ -656,26 +658,27 @@
     });
 
     // ===== 强制横屏 (方案A: Screen Orientation API + 方案B: CSS降级) =====
+    var _landscapeLocked = false;
+    
     async function lockLandscape() {
+      if (_landscapeLocked) return;
+      _landscapeLocked = true;
       try {
         if (screen.orientation && screen.orientation.lock) {
           await screen.orientation.lock('landscape');
-          console.log('[横屏] Screen Orientation API 锁定成功');
+          console.log('[横屏] API锁定成功');
           return;
         }
       } catch (e) {
-        console.warn('[横屏] 不支持或被拒绝，使用CSS降级方案:', e);
+        console.warn('[横屏] 不支持或被拒绝:', e.message);
       }
       // 方案B降级: CSS @media portrait 已处理旋转
-      console.log('[横屏] 使用 CSS transform 旋转方案');
+      console.log('[横屏] 使用CSS transform旋转');
     }
 
     function unlockLandscape() {
-      try {
-        if (screen.orientation && screen.orientation.unlock) {
-          screen.orientation.unlock();
-        }
-      } catch(e) {}
+      _landscapeLocked = false;
+      try { if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch(e) {}
     }
 
     function open() {
@@ -685,7 +688,8 @@
       if (!guideText && window._currentHandwriteField) guideText = window._currentHandwriteField.getAttribute('data-field-handwrite-guide') || '';
       if (guideEl) { guideEl.textContent = guideText; guideEl.classList.toggle('is-hidden', !guideText); }
       document.body.style.overflow = 'hidden';
-      lockLandscape();  // 锁定横屏
+      // 延迟尝试锁定（需用户交互才有效）
+      setTimeout(lockLandscape, 500);
       setTimeout(function() { resizeCanvas(); resetCanvas(); }, 150);
     }
     function close() { document.body.style.overflow = ''; unlockLandscape(); }

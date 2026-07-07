@@ -371,90 +371,6 @@
     }
 
     /* ==========================================================================
-       Handwrite Modal — Sync Config (数据同步配置)
-       ========================================================================== */
-    .hw-sync-config {
-      width: 100%;
-      max-width: 400px;
-      margin-bottom: 16px;
-      border: 1px solid #E0E0E0;
-      border-radius: 6px;
-      background: #FAFAFA;
-      overflow: hidden;
-    }
-    .hw-sync-config__header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 14px;
-      cursor: pointer;
-      font-size: 13px;
-      color: #555;
-      user-select: none;
-      transition: background 0.15s;
-    }
-    .hw-sync-config__header:hover { background: #F0F0F0; }
-    .hw-sync-config__toggle { font-size: 12px; color: #999; }
-    .hw-sync-config.is-expanded .hw-sync-config__toggle::after { content: ' ▲'; }
-    .hw-sync-config:not(.is-expanded) .hw-sync-config__toggle::after { content: ' ▼'; }
-    .hw-sync-config__body {
-      display: none;
-      padding: 12px 14px;
-      border-top: 1px solid #E0E0E0;
-      background: #FFF;
-    }
-    .hw-sync-config.is-expanded .hw-sync-config__body { display: block; }
-    .hw-sync-config__body label {
-      display: block;
-      font-size: 12px;
-      font-weight: 600;
-      color: #333;
-      margin-bottom: 6px;
-    }
-    .hw-sync-config__input-wrap {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-    .hw-sync-config__input-wrap input {
-      flex: 1;
-      min-width: 0;
-      padding: 7px 10px;
-      border: 1px solid #D0D0D0;
-      border-radius: 4px;
-      font-size: 13px;
-      font-family: monospace;
-    }
-    .hw-sync-config__input-wrap input:focus {
-      outline: none;
-      border-color: #7B3FF2;
-      box-shadow: 0 0 0 2px rgba(123,63,242,0.15);
-    }
-    .btn--small {
-      padding: 7px 14px;
-      font-size: 12px;
-      white-space: nowrap;
-    }
-    .hw-sync-config__hint {
-      font-size: 11px;
-      color: #888;
-      line-height: 1.5;
-      margin: 0 0 4px 0;
-    }
-    .hw-sync-config__hint a {
-      color: #7B3FF2;
-      text-decoration: none;
-    }
-    .hw-sync-config__hint a:hover { text-decoration: underline; }
-    .hw-sync-config__status {
-      font-size: 12px;
-      margin: 4px 0 0 0;
-      font-weight: 500;
-    }
-    .hw-sync-config__status.is-success { color: #29C645; }
-    .hw-sync-config__status.is-error { color: #EA2C2C; }
-
-    /* ==========================================================================
        Handwrite Modal — QR Code View (手机手绘)
        ========================================================================== */
     .handwrite-modal__draw-view,
@@ -528,23 +444,6 @@
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-  <!-- JSONbin.io 数据同步（替代Firebase） -->
-  <script>
-    // JSONbin.io 配置 - 免费注册获取: https://jsonbin.io/login
-    var SYNC_API_BASE = 'https://api.jsonbin.io/v3';
-    var _syncMasterKey = '';
-    var _currentBinId = null;
-    var _pollTimer = null;
-
-    function setSyncConfig(masterKey) {
-      _syncMasterKey = masterKey;
-      localStorage.setItem('signature_sync_master_key', masterKey);
-    }
-
-    function getSyncConfig() {
-      return { masterKey: _syncMasterKey || localStorage.getItem('signature_sync_master_key') || '' };
-    }
-  </script>
   <script src="./components/i18n.js" defer></script>
   <script src="./components/select.js" defer></script>
   <script src="./components/input-number.js" defer></script>
@@ -1148,24 +1047,6 @@
         
         <!-- 手机手绘二维码视图（默认隐藏） -->
         <div class="handwrite-modal__qrcode-view" id="hwQRCodeView" style="display: none;">
-          <!-- JSONbin.io Master Key 配置（首次使用必填） -->
-          <div class="hw-sync-config" id="hwSyncConfig">
-            <div class="hw-sync-config__header" onclick="document.getElementById('hwSyncConfig').classList.toggle('is-expanded')">
-              <span>⚙️ 数据同步配置</span>
-              <span class="hw-sync-config__toggle">展开</span>
-            </div>
-            <div class="hw-sync-config__body">
-              <label>JSONbin.io Master Key：</label>
-              <div class="hw-sync-config__input-wrap">
-                <input type="password" id="hwMasterKeyInput" placeholder="粘贴您的 Master Key" />
-                <button type="button" id="hwSaveKeyBtn" class="btn btn--small">保存</button>
-              </div>
-              <p class="hw-sync-config__hint">
-                免费获取：<a href="https://jsonbin.io/login" target="_blank">注册 jsonbin.io</a> → 复制 API Keys 中的 Master Key
-              </p>
-              <p class="hw-sync-config__status" id="hwSyncConfigStatus"></p>
-            </div>
-          </div>
           <div class="handwrite-modal__qrcode-container">
             <div class="handwrite-modal__qrcode-wrap">
               <img id="hwQRCodeImg" class="handwrite-modal__qrcode-img" alt="扫码签名" />
@@ -1205,40 +1086,6 @@
     var undoStack = [];
     var MAX_UNDO = 30;
     var hasDrawing = false;
-
-    // ===== Master Key 配置 UI 初始化 =====
-    (function initSyncConfig() {
-      var cfg = getSyncConfig();
-      var input = document.getElementById('hwMasterKeyInput');
-      var saveBtn = document.getElementById('hwSaveKeyBtn');
-      var statusEl = document.getElementById('hwSyncConfigStatus');
-
-      if (cfg.masterKey) {
-        input.value = cfg.masterKey;
-        setSyncConfig(cfg.masterKey);
-        statusEl.textContent = '✓ 已配置';
-        statusEl.className = 'hw-sync-config__status is-success';
-      } else {
-        document.getElementById('hwSyncConfig').classList.add('is-expanded');
-      }
-
-      saveBtn.addEventListener('click', function() {
-        var key = input.value.trim();
-        if (!key) {
-          statusEl.textContent = '请输入 Master Key';
-          statusEl.className = 'hw-sync-config__status is-error';
-          return;
-        }
-        setSyncConfig(key);
-        statusEl.textContent = '✓ 已保存';
-        statusEl.className = 'hw-sync-config__status is-success';
-        console.log('[Sync] Master Key 已保存');
-      });
-
-      input.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') saveBtn.click();
-      });
-    })();
 
     function resizeCanvas() {
       var rect = canvasInner.getBoundingClientRect();
@@ -1381,215 +1228,68 @@
       closeModal();
     });
 
-    // ===== 手机手绘 Tab 切换 + JSONbin.io 数据同步 =====
+    // ===== 手机手绘 Tab 切换（本地模式，仅生成二维码供扫码） =====
     var tabs = document.querySelectorAll('.handwrite-modal__tab');
     var drawView = document.getElementById('hwDrawView');
     var qrCodeView = document.getElementById('hwQRCodeView');
     var qrImg = document.getElementById('hwQRCodeImg');
     var qrStatusText = document.querySelector('.handwrite-modal__qrcode-status span:last-child');
 
-    // 当前会话ID和Bin ID
-    var currentSessionId = null;
-    var _pollTimer = null;
-
-    // GitHub Pages 移动端签署地址
     var MOBILE_SIGN_URL = 'https://xianchen-cc.github.io/signature-sync/pages/drawing-handwrite-mobile.html';
 
-    // 生成唯一会话ID
     function generateSessionId() {
       return 'sess_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 8);
-    }
-
-    // 创建 JSONbin 并开始轮询监听
-    function startSyncListener(sessionId) {
-      stopSyncListener();
-      var cfg = getSyncConfig();
-      if (!cfg.masterKey) {
-        updateQRStatus('error', '请先配置 Master Key（见页面顶部提示）');
-        return;
-      }
-      currentSessionId = sessionId;
-
-      fetch(SYNC_API_BASE + '/b', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Master-Key': cfg.masterKey,
-          'X-Bin-Name': 'signature-session-' + sessionId,
-          'X-Bin-Private': 'false'
-        },
-        body: JSON.stringify({ status: 'waiting', sid: sessionId, createdAt: Date.now() })
-      })
-      .then(function(res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
-      .then(function(data) {
-        _currentBinId = data.metadata.id;
-        console.log('[Sync] Bin创建成功:', _currentBinId);
-        startPolling(cfg.masterKey, _currentBinId);
-        updateQRCodeWithBin(sessionId, _currentBinId, cfg.masterKey);
-      })
-      .catch(function(err) {
-        console.error('[Sync] 创建Bin失败:', err);
-        updateQRStatus('error', '连接失败，请检查 Master Key 是否正确');
-      });
-    }
-
-    // 轮询检查签名状态（每2秒一次）
-    function startPolling(masterKey, binId) {
-      if (_pollTimer) clearInterval(_pollTimer);
-      var pollCount = 0;
-      _pollTimer = setInterval(function() {
-        pollCount++;
-        if (pollCount > 300) {
-          updateQRStatus('error', '等待超时，请重新扫码');
-          stopSyncListener();
-          return;
-        }
-        fetch(SYNC_API_BASE + '/b/' + binId + '/latest', {
-          headers: { 'X-Master-Key': masterKey }
-        })
-        .then(function(res) { if (!res.ok) throw new Error('HTTP' + res.status); return res.json(); })
-        .then(function(result) {
-          var data = result.record;
-          if (!data) return;
-          if (data.status === 'connected') {
-            updateQRStatus('connected', '手机已连接，等待签名...');
-          } else if (data.status === 'completed' && data.imageData) {
-            onMobileSignatureReceived(data);
-          }
-        })
-        .catch(function(err) {});
-      }, 2000);
-    }
-
-    // 停止同步监听
-    function stopSyncListener() {
-      if (_pollTimer) { clearInterval(_pollTimer); _pollTimer = null; }
-      if (_currentBinId && getSyncConfig().masterKey) {
-        fetch(SYNC_API_BASE + '/b/' + _currentBinId, {
-          method: 'DELETE',
-          headers: { 'X-Master-Key': getSyncConfig().masterKey }
-        }).catch(function(){});
-      }
-      _currentBinId = null;
-      currentSessionId = null;
-    }
-
-    // 接收到移动端签名数据的处理
-    function onMobileSignatureReceived(data) {
-      updateQRStatus('success', '签名已接收！');
-      
-      // 将移动端签名应用到控件
-      var field = window._currentHandwriteField;
-      if (!field) return;
-      
-      var body = field.querySelector('.ns-envelope-editor-field__body');
-      if (!body) return;
-
-      var img = body.querySelector('.ns-envelope-editor-field__handwrite-image');
-      if (!img) {
-        img = document.createElement('img');
-        img.className = 'ns-envelope-editor-field__handwrite-image';
-        img.alt = '';
-        img.draggable = false;
-        body.appendChild(img);
-      }
-      
-      // 使用回传的图片数据（已经是等比缩放后的）
-      img.src = data.imageData;
-      img.classList.add('is-visible');
-
-      // 隐藏引导文案和图标
-      var guide = body.querySelector('[data-handwrite-guide]');
-      if (guide) guide.classList.add('is-hidden');
-      var icon = body.querySelector('.ns-envelope-editor-field__icon');
-      if (icon) icon.style.display = 'none';
-      var label = body.querySelector('.ns-envelope-editor-field__label');
-      if (label) label.style.display = 'none';
-      
-      var guideTextEl = document.getElementById('handwriteGuideText');
-      if (guideTextEl) guideTextEl.classList.add('is-hidden');
-
-      // 延迟关闭弹窗，让用户看到"签名已接收"状态
-      setTimeout(function() {
-        closeModal();
-        stopSyncListener();
-      }, 800);
     }
 
     // 更新二维码视图状态文字和样式
     function updateQRStatus(status, text) {
       if (!qrStatusText || !qrCodeView) return;
       qrStatusText.textContent = text;
-      
       var dot = qrCodeView.querySelector('.hw-qrcode-dot');
       if (dot) {
-        dot.className = 'hw-qrcode-dot'; // 重置动画
-        
-        if (status === 'waiting' || status === 'connected') {
-          dot.classList.add('hw-pulse--active');
-        } else if (status === 'success') {
-          dot.style.background = '#29C645'; // 绿色表示成功
-        } else if (status === 'error') {
-          dot.style.background = '#EA2C2C'; // 红色表示错误
-        }
+        dot.className = 'hw-qrcode-dot';
+        if (status === 'waiting') { dot.classList.add('hw-pulse--active'); }
+        else if (status === 'success') { dot.style.background = '#29C645'; }
+        else if (status === 'error') { dot.style.background = '#EA2C2C'; }
       }
     }
 
     tabs.forEach(function(tab) {
       tab.addEventListener('click', function() {
         var tabType = this.getAttribute('data-tab');
-        
         if (tabType === 'phone') {
-          // 切换到手机手绘tab
           tabs.forEach(function(t) { t.classList.remove('handwrite-modal__tab--active'); });
           this.classList.add('handwrite-modal__tab--active');
-
-          // 显示二维码视图，隐藏绘制视图
           drawView.style.display = 'none';
           qrCodeView.style.display = 'flex';
-
-          // 生成新会话ID并启动JSONbin同步监听
-          var sessionId = generateSessionId();
-          updateQRStatus('waiting', '正在创建同步会话...');
-          startSyncListener(sessionId);
+          updateQRStatus('waiting', '请用手机扫码绘制');
+          generateQRCode(generateSessionId());
         } else if (tabType === 'draw') {
-          // 切换回在此绘制tab
           tabs.forEach(function(t) { t.classList.remove('handwrite-modal__tab--active'); });
           this.classList.add('handwrite-modal__tab--active');
-
-          // 显示绘制视图，隐藏二维码视图
           drawView.style.display = 'flex';
           qrCodeView.style.display = 'none';
-
-          // 停止同步监听
-          stopSyncListener();
         }
       });
     });
 
-    // 生成包含 binId 和 masterKey 的二维码URL
-    function updateQRCodeWithBin(sessionId, binId, masterKey) {
+    // 生成二维码（无需JS库，使用在线API）
+    function generateQRCode(sessionId) {
       if (!qrImg) return;
-
       var field = window._currentHandwriteField;
       var url = MOBILE_SIGN_URL;
       var sep = '?';
-
-      // 必须参数：会话ID、Bin ID、Master Key
       if (sessionId) { url += sep + 'sid=' + encodeURIComponent(sessionId); sep = '&'; }
-      if (binId) { url += sep + 'bin=' + encodeURIComponent(binId); sep = '&'; }
-      if (masterKey) { url += sep + 'mk=' + encodeURIComponent(masterKey); sep = '&'; }
-
-      // 可选参数：引导文字和控件尺寸
       if (field) {
         var guide = field.getAttribute('data-field-handwrite-guide') || '';
         if (guide) { url += sep + 'guide=' + encodeURIComponent(guide); sep = '&'; }
-
+        
+        // 传递控件尺寸，用于移动端等比缩放签名图片
         var fieldRect = field.getBoundingClientRect();
         url += sep + 'fw=' + Math.round(fieldRect.width) + '&fh=' + Math.round(fieldRect.height);
       }
 
-      // 使用 QR Server API 生成二维码图片
+      // 使用 QR Server API 生成二维码图片（免费、稳定、无需依赖）
       var qrApiUrl = 'https://api.qrserver.com/v1/create-qr-code/?' +
         'size=176x176&' +
         'data=' + encodeURIComponent(url) + '&' +
@@ -1598,22 +1298,21 @@
         'qzone=1&' +
         'margin=2';
 
+      // 设置图片源
       qrImg.src = qrApiUrl;
+
+      // 错误处理：如果API失败显示备用内容
       qrImg.onerror = function() {
         this.onerror = null;
-        qrImg.alt = '扫码签署';
-        qrImg.parentNode.innerHTML = '<p style="font-size:12px;color:#666;text-align:center;padding:20px;">二维码加载失败<br><a href="' + url + '" target="_blank">点击打开链接</a></p>';
+        // 失败时显示占位图
+        this.src = 'data:image/svg+xml,' + encodeURIComponent(
+          '<svg xmlns="http://www.w3.org/2000/svg" width="176" height="176" viewBox="0 0 176 176">' +
+          '<rect fill="#f5f5f5" width="176" height="176"/>' +
+          '<text x="88" y="80" text-anchor="middle" fill="#666" font-size="12" font-family="sans-serif">二维码生成失败</text>' +
+          '<text x="88" y="100" text-anchor="middle" fill="#999" font-size="10" font-family="sans-serif">请刷新页面重试</text>' +
+          '</svg>'
+        );
       };
-
-      console.log('[QR] 二维码URL已生成, binId:', binId);
-    }
-
-    // 兼容旧接口（保留但不推荐使用）
-    function generateQRCode(sessionId) {
-      console.warn('[Deprecated] generateQRCode 已弃用，请使用 updateQRCodeWithBin');
-      if (_currentBinId && getSyncConfig().masterKey) {
-        updateQRCodeWithBin(sessionId, _currentBinId, getSyncConfig().masterKey);
-      }
     }
 
     document.addEventListener('keydown', function(e) {
@@ -1675,8 +1374,6 @@
     function closeModal() {
       overlay.classList.remove('is-open');
       overlay.setAttribute('aria-hidden', 'true');
-      // 关闭弹窗时停止同步监听
-      stopSyncListener();
     }
 
     function applyHandwriteToField() {

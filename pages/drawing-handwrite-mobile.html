@@ -625,12 +625,10 @@
       var ry = (cy - rect.top) / rect.height;
 
       if (window.matchMedia('(orientation: portrait)').matches) {
-        // rotate(-90deg) 围绕中心逆时针旋转90度
-        // 屏幕x(左右) ↔ canvas y(上下), 屏幕y(上下) ↔ canvas x(左右)
-        // 且canvas的y轴因旋转而反向
+        // rotate(-90deg): 交换xy，两个轴都需调整方向
         var t = rx;
-        rx = ry;       // 屏幕上下 → canvas 左右
-        ry = 1 - t;    // 屏幕左右 → canvas 下上（翻转）
+        rx = 1 - ry;    // 屏幕上下 ↔ canvas 左右（反向）
+        ry = t;         // 屏幕左右 ↔ canvas 上下
       }
 
       return { x: rx * canvas.clientWidth, y: ry * canvas.clientHeight };

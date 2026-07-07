@@ -621,15 +621,12 @@
       var cx = e.touches ? e.touches[0].clientX : e.clientX;
       var cy = e.touches ? e.touches[0].clientY : e.clientY;
       var rect = canvas.getBoundingClientRect();
-      // 先算出在旋转后边界框内的归一化位置 [0,1]
       var rx = (cx - rect.left) / rect.width;
       var ry = (cy - rect.top) / rect.height;
 
       if (window.matchMedia('(orientation: portrait)').matches) {
-        // rotate(-90deg): 交换xy，x轴方向反转
-        var t = rx;
-        rx = ry;
-        ry = 1 - t;
+        // rotate(-90deg): 交换 xy（不加翻转）
+        var t = rx; rx = ry; ry = t;
       }
 
       return { x: rx * canvas.clientWidth, y: ry * canvas.clientHeight };

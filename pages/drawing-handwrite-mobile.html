@@ -365,30 +365,6 @@
       border: none; cursor: pointer;
     }
     .hw-mobile__panel-btn:active { background: #4B0EC1; }
-
-    /* ===== 强制横屏 - 方案B降级 (CSS旋转) ===== */
-    @media screen and (orientation: portrait) {
-      #hwMobile {
-        position: fixed;
-        top: 0; left: 0;
-        width: 100vh;
-        height: 100vw;
-        transform-origin: 0 0;
-        transform: rotate(-90deg);
-      }
-      body {
-        overflow: hidden;
-        background: #000;
-      }
-    }
-    @media screen and (orientation: landscape) {
-      /* 横屏时正常显示 */
-      #hwMobile {
-        transform: none;
-        width: 100%; height: 100%;
-        position: relative;
-      }
-    }
   </style>
 </head>
 <body>
@@ -616,7 +592,7 @@
     function updateDoneButton() { btnDone.classList.toggle('is-disabled', !hasDrawn); }
 
     function getPos(e) { var rect = canvas.getBoundingClientRect(), cx=e.touches?e.touches[0].clientX:e.clientX, cy=e.touches?e.touches[0].clientY:e.clientY; return{x:cx-rect.left,y:cy-rect.top}; }
-    function startDraw(e){e.preventDefault();isDrawing=true;var p=getPos(e);lastX=p.x;lastY=p.y;ctx.beginPath();ctx.arc(lastX,lastY,currentSize/2,0,Math.PI*2);ctx.fillStyle=currentColor;ctx.fill();lockLandscape();}
+    function startDraw(e){e.preventDefault();isDrawing=true;var p=getPos(e);lastX=p.x;lastY=p.y;ctx.beginPath();ctx.arc(lastX,lastY,currentSize/2,0,Math.PI*2);ctx.fillStyle=currentColor;ctx.fill();}
     function moveDraw(e){if(!isDrawing)return;e.preventDefault();var p=getPos(e);ctx.beginPath();ctx.moveTo(lastX,lastY);ctx.lineTo(p.x,p.y);ctx.strokeStyle=currentColor;ctx.lineWidth=currentSize;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();lastX=p.x;lastY=p.y;}
     function endDraw(){if(!isDrawing)return;isDrawing=false;hasDrawn=true;updateDoneButton();saveState();if(guideEl)guideEl.classList.add('is-hidden');}
 
@@ -657,30 +633,6 @@
         .catch(function(err) { console.error(err); btn.textContent = '完成'; alert('提交失败，请重试'); });
     });
 
-    // ===== 强制横屏 (方案A: Screen Orientation API + 方案B: CSS降级) =====
-    var _landscapeLocked = false;
-    
-    async function lockLandscape() {
-      if (_landscapeLocked) return;
-      _landscapeLocked = true;
-      try {
-        if (screen.orientation && screen.orientation.lock) {
-          await screen.orientation.lock('landscape');
-          console.log('[横屏] API锁定成功');
-          return;
-        }
-      } catch (e) {
-        console.warn('[横屏] 不支持或被拒绝:', e.message);
-      }
-      // 方案B降级: CSS @media portrait 已处理旋转
-      console.log('[横屏] 使用CSS transform旋转');
-    }
-
-    function unlockLandscape() {
-      _landscapeLocked = false;
-      try { if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch(e) {}
-    }
-
     function open() {
       setTimeout(notifyConnected, 500);
       var urlParams = new URLSearchParams(window.location.search);
@@ -688,11 +640,9 @@
       if (!guideText && window._currentHandwriteField) guideText = window._currentHandwriteField.getAttribute('data-field-handwrite-guide') || '';
       if (guideEl) { guideEl.textContent = guideText; guideEl.classList.toggle('is-hidden', !guideText); }
       document.body.style.overflow = 'hidden';
-      // 延迟尝试锁定（需用户交互才有效）
-      setTimeout(lockLandscape, 500);
       setTimeout(function() { resizeCanvas(); resetCanvas(); }, 150);
     }
-    function close() { document.body.style.overflow = ''; unlockLandscape(); }
+    function close() { document.body.style.overflow = ''; }
     function applyHandwriteToField() {
       var field = window._currentHandwriteField; if (!field) return;
       if (guideEl) guideEl.classList.add('is-hidden');
@@ -711,7 +661,7 @@
     window._hwMobileOpen = open; window._hwMobileClose = close; window._hwMobileSyncGuide = syncGuideText;
     resizeCanvas(); saveState();
     window.addEventListener('resize', resizeCanvas);
-    window.addEventListener('orientationchange', function() { setTimeout(function() { resizeCanvas(); lockLandscape(); }, 100); });
+    window.addEventListener('orientationchange', function() { setTimeout(resizeCanvas, 100); });
     open();
   })();
   </script>

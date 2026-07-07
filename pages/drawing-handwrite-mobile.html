@@ -366,16 +366,18 @@
     }
     .hw-mobile__panel-btn:active { background: #4B0EC1; }
 
-    /* ===== 移动端竖屏适配：整体旋转90°让横屏UI正确显示 ===== */
+    /* ===== 竖屏时旋转整个页面为竖向布局 ===== */
     @media screen and (orientation: portrait) {
-      body { background: #221D39; overflow: hidden; }
+      html { background: #FFFFFF; }
+      body { overflow: hidden; }
       #hwMobile {
         position: fixed;
-        top: 0;
-        left: 100vw;
+        top: 50%; left: 50%;
         width: 100vh;
         height: 100vw;
-        transform-origin: 0 0;
+        margin-left: calc(-50vh);
+        margin-top: calc(-50vw);
+        transform-origin: center center;
         transform: rotate(-90deg);
       }
     }
@@ -385,7 +387,8 @@
         width: 100% !important;
         height: 100% !important;
         position: relative !important;
-        left: auto !important;
+        margin: 0 !important;
+        top: auto !important; left: auto !important;
       }
     }
   </style>

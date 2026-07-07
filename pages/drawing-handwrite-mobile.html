@@ -238,11 +238,12 @@
     }
     .hw-mobile__panel-overlay.is-open { opacity: 1; visibility: visible; }
 
+    /* 面板容器 (Figma #5:3521: bg #FFF, r 4px 左上左下) */
     .hw-mobile__panel {
       width: 100%;
       max-height: 55vh;
       background: #FFFFFF;
-      border-radius: 12px 12px 0 0;
+      border-radius: 4px 0 0 4px;
       box-shadow: 0 -4px 24px 0 rgba(0, 0, 0, 0.12);
       display: flex; flex-direction: column;
       transform: translateY(100%);
@@ -250,59 +251,107 @@
     }
     .hw-mobile__panel-overlay.is-open .hw-mobile__panel { transform: translateY(0); }
 
-    .hw-mobile__panel-handle {
-      width: 36px; height: 4px;
-      border-radius: 2px; background: #E0E0E0;
-      margin: 10px auto 6px; flex-shrink: 0;
-    }
-
+    /* 面板头部 (Figma #5:3522: pad 16px, borderBottom #EAEBF0 1px) */
     .hw-mobile__panel-header {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 8px 20px 14px; flex-shrink: 0;
+      padding: 16px;
+      border-bottom: 1px solid #EAEBF0;
+      flex-shrink: 0;
     }
-    .hw-mobile__panel-title { font-weight: 600; font-size: 17px; line-height: 24px; color: #262626; }
+    /* 标题 (Figma #5:3523: PingFang SC Semibold 600, 16px, lh24, #221D39) */
+    .hw-mobile__panel-title {
+      font-family: "PingFang SC", sans-serif;
+      font-style: normal;
+      font-weight: 600;
+      font-size: 16px;
+      line-height: 24px;
+      color: #221D39;
+    }
+    /* 关闭图标 (Figma #5:3524: 16x16, 无背景) */
     .hw-mobile__panel-close {
-      width: 28px; height: 28px;
+      width: 16px; height: 16px;
       display: flex; align-items: center; justify-content: center;
-      cursor: pointer; border: none; background: #F5F5F5; border-radius: 14px; padding: 0;
+      cursor: pointer; border: none; background: transparent; padding: 0;
     }
 
+    /* 面板内容区 (Figma #5:3525: pad 0 16px, gap 21.33px) */
     .hw-mobile__panel-body {
-      flex: 1; padding: 0 20px 16px;
-      display: flex; flex-direction: column; gap: 20px;
+      flex: 1; padding: 0 16px;
+      display: flex; flex-direction: column;
+      gap: 21.33px;
       overflow-y: auto; -webkit-overflow-scrolling: touch;
     }
 
-    .hw-mobile__panel-section { display: flex; flex-direction: column; gap: 10px; }
-    .hw-mobile__panel-label { font-weight: 500; font-size: 14px; line-height: 20px; color: #666666; }
-    .hw-mobile__panel-swatches { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+    /* 区块 (Figma EL-25ef3ffa: column, gap 16px) */
+    .hw-mobile__panel-section { display: flex; flex-direction: column; gap: 16px; }
+    /* 标签 (Figma #5:3527/#5:3608: Regular 400, 16px, lh22, #262626) */
+    .hw-mobile__panel-label {
+      font-family: "PingFang SC", sans-serif;
+      font-style: normal;
+      font-weight: 400;
+      font-size: 16px;
+      line-height: 22px;
+      color: #262626;
+    }
+    /* 色块/粗细行 (Figma #5:3528/#5:3609: row, gap 21px) */
+    .hw-mobile__panel-swatches {
+      display: flex; align-items: center; gap: 21px;
+    }
 
+    /*
+     * 颜色/粗细按钮
+     * Figma EL-1722ff37 (未选中): 32x32, bg #FFF(透明?), border #EAEBF0, r 5.33
+     * Figma EL-542feed9 (选中): 30.67x32, bg transparent, r 5.33
+     */
     .hw-mobile__panel-swatch {
       display: flex; align-items: center; justify-content: center;
-      width: 34px; height: 34px; border-radius: 50%;
-      background: transparent; border: 2px solid transparent;
+      width: 32px; height: 32px;
+      border-radius: 5.33px;
+      background: #FFFFFF;
+      border: 1px solid #EAEBF0;
       cursor: pointer; padding: 0;
-      transition: border-color 0.15s ease, transform 0.15s ease;
+      flex-shrink: 0;
+      transition: all 0.15s ease;
     }
-    .hw-mobile__panel-swatch--active { border-color: #5F11F1; transform: scale(1.08); }
-
-    .hw-mobile__panel-swatch--size {
-      width: 44px; height: 44px; border-radius: 8px;
-      background: #F5F5F5; border: 2px solid transparent;
+    .hw-mobile__panel-swatch:active { background: #F5F5F5; }
+    
+    /* 选中态 - 透明背景表示选中 (匹配 Figma EL-542feed9) */
+    .hw-mobile__panel-swatch--active {
+      background: transparent;
+      border-color: transparent;
     }
-    .hw-mobile__panel-swatch--size.hw-mobile__panel-swatch--active { background: #EFECFF; border-color: #5F11F1; }
 
+    /* 颜色圆点 (Figma EL-fcdbb995: 18.67x18.67 圆形) */
+    .hw-mobile__panel-swatch:not(.hw-mobile__panel-swatch--size) .swatch-dot {
+      width: 18.67px;
+      height: 18.67px;
+      border-radius: 50%;
+      display: block;
+    }
+
+    /* 粗细按钮复用基础样式 */
+
+    /* 粗细线条SVG容器 */
+    .swatch-line-svg {
+      display: block;
+      width: 18.53px;
+      height: 13.9px;
+    }
+
+    /* 面板底部 (Figma #5:3647: pad 16px, 无分割线) */
     .hw-mobile__panel-footer {
-      padding: 10px 20px;
-      padding-bottom: calc(10px + env(safe-area-inset-bottom, 0));
-      flex-shrink: 0; border-top: 1px solid #F0F0F0;
+      padding: 16px;
+      flex-shrink: 0;
     }
+    /* 切换按钮 (Figma #5:3649: bg #5F11F1, pad 8px 16px, h 40, r 2px) */
     .hw-mobile__panel-btn {
       display: flex; align-items: center; justify-content: center;
-      width: 100%; height: 46px; border-radius: 8px;
+      width: 100%; height: 40px;
+      border-radius: 2px;
       background: #5F11F1; color: #FFFFFF;
       font-family: "PingFang SC", sans-serif;
-      font-weight: 600; font-size: 16px; line-height: 22px;
+      font-style: normal; font-weight: 400;
+      font-size: 16px; line-height: 22px;
       border: none; cursor: pointer;
     }
     .hw-mobile__panel-btn:active { background: #4B0EC1; }
@@ -421,38 +470,85 @@
       </div>
     </div>
 
-    <!-- 切换画笔面板 -->
+    <!-- 切换画笔面板 (Figma #5:3521) -->
     <div class="hw-mobile__panel-overlay" id="hwPanelOverlay">
       <div class="hw-mobile__panel" id="hwPanel">
-        <div class="hw-mobile__panel-handle"></div>
+        <!-- 头部 (Figma #5:3522) -->
         <div class="hw-mobile__panel-header">
           <span class="hw-mobile__panel-title">切换画笔</span>
           <button class="hw-mobile__panel-close" id="hwPanelClose">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 1L13 13M13 1L1 13" stroke="#666" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <!-- 关闭图标 16x16 (Figma #5:3524, component 1:4227) -->
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 4L12 12M12 4L4 12" stroke="#666666" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
           </button>
         </div>
+
+        <!-- 内容区 (Figma #5:3525) -->
         <div class="hw-mobile__panel-body">
+          <!-- 颜色选择 (Figma #5:3526) -->
           <div class="hw-mobile__panel-section">
             <span class="hw-mobile__panel-label">颜色</span>
+            <!-- 颜色行 gap 21px (Figma #5:3528) -->
             <div class="hw-mobile__panel-swatches" id="hwPanelColors">
-              <button class="hw-mobile__panel-swatch hw-mobile__panel-swatch--active" data-color="#000000" style="background:#000000;"></button>
-              <button class="hw-mobile__panel-swatch" data-color="#2C60F2" style="background:#2C60F2;"></button>
-              <button class="hw-mobile__panel-swatch" data-color="#EA2C2C" style="background:#EA2C2C;"></button>
-              <button class="hw-mobile__panel-swatch" data-color="#29C645" style="background:#29C645;"></button>
-              <button class="hw-mobile__panel-swatch" data-color="#E9B20B" style="background:#E9B20B;"></button>
-              <button class="hw-mobile__panel-swatch" data-color="#E90E9A" style="background:#E90E9A;"></button>
+              <!-- 黑色 - 选中态(透明bg) -->
+              <button class="hw-mobile__panel-swatch hw-mobile__panel-swatch--active" data-color="#000000">
+                <span class="swatch-dot" style="background:#000000;"></span>
+              </button>
+              <!-- 蓝色 -->
+              <button class="hw-mobile__panel-swatch" data-color="#2C60F2">
+                <span class="swatch-dot" style="background:#2C60F2;"></span>
+              </button>
+              <!-- 红色 -->
+              <button class="hw-mobile__panel-swatch" data-color="#EA2C2C">
+                <span class="swatch-dot" style="background:#EA2C2C;"></span>
+              </button>
+              <!-- 绿色 -->
+              <button class="hw-mobile__panel-swatch" data-color="#29C645">
+                <span class="swatch-dot" style="background:#29C645;"></span>
+              </button>
+              <!-- 黄色 -->
+              <button class="hw-mobile__panel-swatch" data-color="#E9B20B">
+                <span class="swatch-dot" style="background:#E9B20B;"></span>
+              </button>
+              <!-- 粉色 -->
+              <button class="hw-mobile__panel-swatch" data-color="#E90E9A">
+                <span class="swatch-dot" style="background:#E90E9A;"></span>
+              </button>
             </div>
           </div>
+
+          <!-- 粗细选择 (Figma #5:3607) -->
           <div class="hw-mobile__panel-section">
             <span class="hw-mobile__panel-label">粗细</span>
+            <!-- 粗细行 gap 21px (Figma #5:3609) -->
             <div class="hw-mobile__panel-swatches" id="hwPanelSizes">
-              <button class="hw-mobile__panel-swatch hw-mobile__panel-swatch--size" data-size="2"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="3" fill="#262626"/></svg></button>
-              <button class="hw-mobile__panel-swatch hw-mobile__panel-swatch--size hw-mobile__panel-swatch--active" data-size="4"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="5.5" fill="#262626"/></svg></button>
-              <button class="hw-mobile__panel-swatch hw-mobile__panel-swatch--size" data-size="6"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="8" fill="#262626"/></svg></button>
+              <!-- 细 (stroke-w 0.8) - 选中态 -->
+              <button class="hw-mobile__panel-swatch hw-mobile__panel-swatch--size hw-mobile__panel-swatch--active" data-size="2">
+                <svg class="swatch-line-svg" viewBox="0 0 21 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M0.83 9.18C4.69 3.45 11.03 -0.58 13.04 1.29C15.92 3.97 3.76 12.57 6.33 14.25C8.23 15.49 16.46 6.07 18.09 8.23C19.35 9.90 13.69 13.50 15.61 14.91C16.92 15.88 18.81 13.95 19.95 12.68" stroke="#262626" stroke-width="0.8" stroke-linecap="round"/>
+                </svg>
+              </button>
+              <!-- 中 (stroke-w 1.6) -->
+              <button class="hw-mobile__panel-swatch hw-mobile__panel-swatch--size" data-size="4">
+                <svg class="swatch-line-svg" viewBox="0 0 21 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M0.83 9.18C4.69 3.45 11.03 -0.58 13.04 1.29C15.92 3.97 3.76 12.57 6.33 14.25C8.23 15.49 16.46 6.07 18.09 8.23C19.35 9.90 13.69 13.50 15.61 14.91C16.92 15.88 18.81 13.95 19.95 12.68" stroke="#262626" stroke-width="1.6" stroke-linecap="round"/>
+                </svg>
+              </button>
+              <!-- 粗 (stroke-w 2.4) -->
+              <button class="hw-mobile__panel-swatch hw-mobile__panel-swatch--size" data-size="6">
+                <svg class="swatch-line-svg" viewBox="0 0 21 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M0.83 9.18C4.69 3.45 11.03 -0.58 13.04 1.29C15.92 3.97 3.76 12.57 6.33 14.25C8.23 15.49 16.46 6.07 18.09 8.23C19.35 9.90 13.69 13.50 15.61 14.91C16.92 15.88 18.81 13.95 19.95 12.68" stroke="#262626" stroke-width="2.4" stroke-linecap="round"/>
+                </svg>
+              </button>
             </div>
           </div>
         </div>
-        <div class="hw-mobile__panel-footer"><button class="hw-mobile__panel-btn" id="hwPanelSwitch">确定</button></div>
+
+        <!-- 底部按钮 (Figma #5:3649) -->
+        <div class="hw-mobile__panel-footer">
+          <button class="hw-mobile__panel-btn" id="hwPanelSwitch">切换</button>
+        </div>
       </div>
     </div>
   </div>

@@ -1615,16 +1615,6 @@
         updateQRCodeWithBin(sessionId, _currentBinId, getSyncConfig().masterKey);
       }
     }
-        // 失败时显示占位图
-        this.src = 'data:image/svg+xml,' + encodeURIComponent(
-          '<svg xmlns="http://www.w3.org/2000/svg" width="176" height="176" viewBox="0 0 176 176">' +
-          '<rect fill="#f5f5f5" width="176" height="176"/>' +
-          '<text x="88" y="80" text-anchor="middle" fill="#666" font-size="12" font-family="sans-serif">二维码生成失败</text>' +
-          '<text x="88" y="100" text-anchor="middle" fill="#999" font-size="10" font-family="sans-serif">请刷新页面重试</text>' +
-          '</svg>'
-        );
-      };
-    }
 
     document.addEventListener('keydown', function(e) {
       if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {

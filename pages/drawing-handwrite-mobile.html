@@ -422,6 +422,7 @@
     }
     function pushSignatureToPC(canvasElement, fieldSize) {
       var sid = getSessionId();
+      console.log('[提交] sid:', sid, 'fbReady:', _fbReady);
       if (!sid || !canvasElement) return Promise.reject('缺少参数');
       return new Promise(function(resolve, reject) {
         var dataUrl = canvasElement.toDataURL('image/png');
@@ -431,11 +432,18 @@
           var w = Math.round(img.width * scale), h = Math.round(img.height * scale);
           var c = document.createElement('canvas'); c.width = w; c.height = h;
           var ctx = c.getContext('2d'); ctx.fillStyle = '#FFF'; ctx.fillRect(0, 0, w, h); ctx.drawImage(img, 0, 0, w, h);
-          if (!_fbReady) { resolve(c.toDataURL()); return; }
-          db.ref('signatures/' + sid).update({ status: 'completed', imageData: c.toDataURL(), timestamp: firebase.database.ServerValue.TIMESTAMP, deviceType: 'mobile' })
-            .then(function() { resolve(c.toDataURL()); }).catch(reject);
+          var finalDataUrl = c.toDataURL();
+          if (!_fbReady) {
+            console.warn('[提交] Firebase未就绪，无法同步到PC端');
+            reject('Firebase连接失败，请检查网络后重试'); return;
+          }
+          console.log('[提交] 正在推送签名到Firebase, sid:', sid, 'dataSize:', finalDataUrl.length);
+          db.ref('signatures/' + sid).update({ status: 'completed', imageData: finalDataUrl, timestamp: firebase.database.ServerValue.TIMESTAMP, deviceType: 'mobile' })
+            .then(function() { console.log('[提交] 推送成功'); resolve(finalDataUrl); })
+            .catch(function(err) { console.error('[提交] 推送失败:', err); reject(err); });
         };
-        img.onerror = reject; img.src = dataUrl;
+        img.onerror = function(err) { console.error('[提交] 图片处理失败:', err); reject(err); };
+        img.src = dataUrl;
       });
     }
   </script>

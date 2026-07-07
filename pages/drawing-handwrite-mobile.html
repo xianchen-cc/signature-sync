@@ -621,14 +621,18 @@
       var cx = e.touches ? e.touches[0].clientX : e.clientX;
       var cy = e.touches ? e.touches[0].clientY : e.clientY;
       var rect = canvas.getBoundingClientRect();
-      var x = cx - rect.left, y = cy - rect.top;
 
-      // 竖屏时页面被 rotate(-90deg)，需要反转坐标系
+      // CSS rotate(-90deg) 后坐标轴互换: 屏幕x→画布y, 屏幕y→画布x
+      // 同时画布视觉宽高也互换了
       if (window.matchMedia('(orientation: portrait)').matches) {
         var cw = canvas.clientWidth, ch = canvas.clientHeight;
-        // rotate(-90deg): 屏幕x → 元素y(从右往左), 屏幕y → 元素x
-        x = cy - rect.top;
-        y = cw - (cx - rect.left);
+        var relX = cx - rect.left;
+        var relY = cy - rect.top;
+        // rotate(-90deg): 屏幕x轴正向 → 画布y轴负向, 屏幕y轴正向 → 画布x轴正向
+        x = relY;
+        y = cw - relX;
+      } else {
+        var x = cx - rect.left, y = cy - rect.top;
       }
       return { x: x, y: y };
     }

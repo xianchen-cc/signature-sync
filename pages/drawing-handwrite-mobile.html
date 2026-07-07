@@ -159,6 +159,10 @@
     .hw-mobile__tool-icon svg { display: block; width: 100%; height: 100%; }
 
     /* 撤销图标特殊处理 (Figma #95:912: 32x32, 含白底rect) */
+    .hw-mobile__undo-btn .hw-mobile__tool-icon {
+      width: 32px;
+      height: 32px;
+    }
     .hw-mobile__undo-btn .hw-mobile__tool-icon svg {
       width: 32px; height: 32px;
     }
@@ -224,32 +228,34 @@
       pointer-events: none;
     }
 
-    /* ===== 切换画笔面板 (底部弹出Sheet) ===== */
+    /* ===== 切换画笔面板 (右侧弹出) ===== */
     .hw-mobile__panel-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(38, 38, 38, 0.55);
       z-index: 100;
       display: flex;
-      justify-content: center;
-      align-items: flex-end;
+      justify-content: flex-end;
+      align-items: center;
       opacity: 0; visibility: hidden;
       transition: opacity 0.25s ease, visibility 0.25s ease;
     }
     .hw-mobile__panel-overlay.is-open { opacity: 1; visibility: visible; }
 
-    /* 面板容器 (Figma #5:3521: bg #FFF, r 4px 左上左下) */
+    /* 面板容器 - 从右侧滑出 */
     .hw-mobile__panel {
-      width: 100%;
-      max-height: 55vh;
+      width: 300px;
+      height: 100%;
+      max-height: 100vh;
       background: #FFFFFF;
       border-radius: 4px 0 0 4px;
-      box-shadow: 0 -4px 24px 0 rgba(0, 0, 0, 0.12);
+      box-shadow: -4px 0 24px 0 rgba(0, 0, 0, 0.12);
       display: flex; flex-direction: column;
-      transform: translateY(100%);
+      transform: translateX(100%);
       transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+      overflow: hidden;
     }
-    .hw-mobile__panel-overlay.is-open .hw-mobile__panel { transform: translateY(0); }
+    .hw-mobile__panel-overlay.is-open .hw-mobile__panel { transform: translateX(0); }
 
     /* 面板头部 (Figma #5:3522: pad 16px, borderBottom #EAEBF0 1px) */
     .hw-mobile__panel-header {
@@ -274,15 +280,17 @@
       cursor: pointer; border: none; background: transparent; padding: 0;
     }
 
-    /* 面板内容区 (Figma #5:3525: pad 0 16px, gap 21.33px) */
+    /* 面板内容区 - 增加上下内边距，加大区块间距 */
     .hw-mobile__panel-body {
-      flex: 1; padding: 0 16px;
+      flex: 1;
+      padding: 24px 16px;
       display: flex; flex-direction: column;
-      gap: 21.33px;
-      overflow-y: auto; -webkit-overflow-scrolling: touch;
+      gap: 28px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
-    /* 区块 (Figma EL-25ef3ffa: column, gap 16px) */
+    /* 区块 - 标签与选项间距 */
     .hw-mobile__panel-section { display: flex; flex-direction: column; gap: 16px; }
     /* 标签 (Figma #5:3527/#5:3608: Regular 400, 16px, lh22, #262626) */
     .hw-mobile__panel-label {
@@ -293,32 +301,32 @@
       line-height: 22px;
       color: #262626;
     }
-    /* 色块/粗细行 (Figma #5:3528/#5:3609: row, gap 21px) */
+    /* 色块/粗细行 - 选项间距 */
     .hw-mobile__panel-swatches {
-      display: flex; align-items: center; gap: 21px;
+      display: flex; align-items: center; gap: 16px;
     }
 
     /*
      * 颜色/粗细按钮
-     * Figma EL-1722ff37 (未选中): 32x32, bg #FFF(透明?), border #EAEBF0, r 5.33
-     * Figma EL-542feed9 (选中): 30.67x32, bg transparent, r 5.33
+     * 未选中: 32x32, bg #FFFFFF, 无边框, r 5.33
+     * 选中: 32x32, bg #F5F6FA(灰底), r 5.33
      */
     .hw-mobile__panel-swatch {
       display: flex; align-items: center; justify-content: center;
       width: 32px; height: 32px;
       border-radius: 5.33px;
       background: #FFFFFF;
-      border: 1px solid #EAEBF0;
+      border: none;
       cursor: pointer; padding: 0;
       flex-shrink: 0;
       transition: all 0.15s ease;
     }
-    .hw-mobile__panel-swatch:active { background: #F5F5F5; }
+    .hw-mobile__panel-swatch:active { background: #EBECF0; }
     
-    /* 选中态 - 透明背景表示选中 (匹配 Figma EL-542feed9) */
+    /* 选中态 - 灰色底色 (匹配设计稿) */
     .hw-mobile__panel-swatch--active {
-      background: transparent;
-      border-color: transparent;
+      background: #F5F6FA;
+      border: none;
     }
 
     /* 颜色圆点 (Figma EL-fcdbb995: 18.67x18.67 圆形) */
@@ -338,10 +346,12 @@
       height: 13.9px;
     }
 
-    /* 面板底部 (Figma #5:3647: pad 16px, 无分割线) */
+    /* 面板底部 - 无分割线 */
     .hw-mobile__panel-footer {
       padding: 16px;
       flex-shrink: 0;
+      border-top: none;
+      background: #FFFFFF;
     }
     /* 切换按钮 (Figma #5:3649: bg #5F11F1, pad 8px 16px, h 40, r 2px) */
     .hw-mobile__panel-btn {
@@ -355,6 +365,28 @@
       border: none; cursor: pointer;
     }
     .hw-mobile__panel-btn:active { background: #4B0EC1; }
+
+    /* ===== 强制横屏 - 方案B降级 (CSS旋转) ===== */
+    @media screen and (orientation: portrait) {
+      #hwMobile {
+        position: fixed;
+        top: 0; left: 100%;
+        width: 100vh;
+        height: 100vw;
+        transform-origin: 0 0;
+        transform: rotate(-90deg);
+      }
+      body {
+        overflow: hidden;
+      }
+    }
+    @media screen and (orientation: landscape) {
+      /* 横屏时正常显示 */
+      #hwMobile {
+        transform: none;
+        width: 100%; height: 100%;
+      }
+    }
   </style>
 </head>
 <body>
@@ -623,6 +655,29 @@
         .catch(function(err) { console.error(err); btn.textContent = '完成'; alert('提交失败，请重试'); });
     });
 
+    // ===== 强制横屏 (方案A: Screen Orientation API + 方案B: CSS降级) =====
+    async function lockLandscape() {
+      try {
+        if (screen.orientation && screen.orientation.lock) {
+          await screen.orientation.lock('landscape');
+          console.log('[横屏] Screen Orientation API 锁定成功');
+          return;
+        }
+      } catch (e) {
+        console.warn('[横屏] 不支持或被拒绝，使用CSS降级方案:', e);
+      }
+      // 方案B降级: CSS @media portrait 已处理旋转
+      console.log('[横屏] 使用 CSS transform 旋转方案');
+    }
+
+    function unlockLandscape() {
+      try {
+        if (screen.orientation && screen.orientation.unlock) {
+          screen.orientation.unlock();
+        }
+      } catch(e) {}
+    }
+
     function open() {
       setTimeout(notifyConnected, 500);
       var urlParams = new URLSearchParams(window.location.search);
@@ -630,9 +685,10 @@
       if (!guideText && window._currentHandwriteField) guideText = window._currentHandwriteField.getAttribute('data-field-handwrite-guide') || '';
       if (guideEl) { guideEl.textContent = guideText; guideEl.classList.toggle('is-hidden', !guideText); }
       document.body.style.overflow = 'hidden';
+      lockLandscape();  // 锁定横屏
       setTimeout(function() { resizeCanvas(); resetCanvas(); }, 150);
     }
-    function close() { document.body.style.overflow = ''; }
+    function close() { document.body.style.overflow = ''; unlockLandscape(); }
     function applyHandwriteToField() {
       var field = window._currentHandwriteField; if (!field) return;
       if (guideEl) guideEl.classList.add('is-hidden');
@@ -651,7 +707,7 @@
     window._hwMobileOpen = open; window._hwMobileClose = close; window._hwMobileSyncGuide = syncGuideText;
     resizeCanvas(); saveState();
     window.addEventListener('resize', resizeCanvas);
-    window.addEventListener('orientationchange', function() { setTimeout(resizeCanvas, 100); });
+    window.addEventListener('orientationchange', function() { setTimeout(function() { resizeCanvas(); lockLandscape(); }, 100); });
     open();
   })();
   </script>

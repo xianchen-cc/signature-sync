@@ -1411,16 +1411,20 @@
       // 构建URL（包含会话ID用于Firebase通信）
       var field = window._currentHandwriteField;
       var url = MOBILE_SIGN_URL;
+      var sep = '?';  // 第一个参数用 ?，后续用 &
+      
+      // 会话ID必须放在第一位
+      if (sessionId) {
+        url += sep + 'sid=' + encodeURIComponent(sessionId);
+        sep = '&';
+      }
       if (field) {
         var guide = field.getAttribute('data-field-handwrite-guide') || '';
-        if (guide) url += '&guide=' + encodeURIComponent(guide);
+        if (guide) { url += sep + 'guide=' + encodeURIComponent(guide); sep = '&'; }
         
         // 传递控件尺寸，用于移动端等比缩放签名图片
         var fieldRect = field.getBoundingClientRect();
-        url += '&fw=' + Math.round(fieldRect.width) + '&fh=' + Math.round(fieldRect.height);
-      }
-      if (sessionId) {
-        url += '&sid=' + encodeURIComponent(sessionId);
+        url += sep + 'fw=' + Math.round(fieldRect.width) + '&fh=' + Math.round(fieldRect.height);
       }
 
       // 使用 QR Server API 生成二维码图片（免费、稳定、无需依赖）
